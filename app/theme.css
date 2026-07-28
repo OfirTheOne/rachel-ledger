@@ -1,0 +1,46 @@
+/* Default palette: Sage green + warm sand (light) */
+:root {
+  --color-bg: #f4f1ea;
+  --color-surface: #fbf9f4;
+  --color-text: #3a3f36;
+  --color-text-muted: #7c8073;
+  --color-border: #e3ddd0;
+  --color-accent: #7a9471;
+  --color-accent-contrast: #ffffff;
+  --color-chart-1: #7a9471;
+  --color-chart-2: #a7b8a0;
+  --color-chart-3: #c9a27a;
+  --color-chart-4: #9a8fb0;
+  --color-chart-5: #d0b25e;
+  --color-chart-6: #6f9a9a;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #23271f;
+    --color-surface: #2c3129;
+    --color-text: #e7e6de;
+    --color-text-muted: #a3a89a;
+    --color-border: #3a4034;
+    --color-accent: #8fae85;
+    --color-accent-contrast: #1c2018;
+  }
+}
+/* Alternative palettes (swap by setting <html data-palette="..."> ) */
+:root[data-palette="blue"] {
+  --color-bg: #eef1f4; --color-surface: #f8fafb; --color-text: #333a40;
+  --color-text-muted: #79838c; --color-border: #dce1e6; --color-accent: #7593ab;
+  --color-accent-contrast: #ffffff; --color-chart-1: #7593ab; --color-chart-2: #a8bccb;
+  --color-chart-3: #c9a27a; --color-chart-4: #9a8fb0; --color-chart-5: #6f9a9a; --color-chart-6: #d0b25e;
+}
+:root[data-palette="earth"] {
+  --color-bg: #f2ece4; --color-surface: #faf6f0; --color-text: #40382f;
+  --color-text-muted: #8a8072; --color-border: #e4dacc; --color-accent: #b17c5e;
+  --color-accent-contrast: #ffffff; --color-chart-1: #b17c5e; --color-chart-2: #c9a27a;
+  --color-chart-3: #8a9a6f; --color-chart-4: #9a8fb0; --color-chart-5: #d0b25e; --color-chart-6: #6f9a9a;
+}
+:root[data-palette="lavender"] {
+  --color-bg: #f1eef4; --color-surface: #faf8fb; --color-text: #3c3742;
+  --color-text-muted: #857f8c; --color-border: #e2dce6; --color-accent: #9a8fb0;
+  --color-accent-contrast: #ffffff; --color-chart-1: #9a8fb0; --color-chart-2: #bcb2cb;
+  --color-chart-3: #c9a27a; --color-chart-4: #7a9471; --color-chart-5: #6f9a9a; --color-chart-6: #d0b25e;
+}
