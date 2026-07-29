@@ -1,0 +1,41 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PaymentMethod {
+  Cash
+  Credit
+  Debit
+  BankTransfer
+  Other
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  isDefault Boolean   @default(false)
+  sortOrder Int       @default(0)
+  archived  Boolean   @default(false)
+  expenses  Expense[]
+}
+
+model Expense {
+  id            String        @id @default(cuid())
+  amountAgorot  Int
+  date          DateTime      @db.Date
+  categoryId    String
+  category      Category      @relation(fields: [categoryId], references: [id])
+  shop          String
+  note          String?
+  paymentMethod PaymentMethod @default(Other)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([date])
+  @@index([categoryId])
+}

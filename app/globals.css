@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@import "./theme.css";
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: system-ui, -apple-system, "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
