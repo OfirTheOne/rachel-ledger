@@ -20,3 +20,12 @@ export async function del(url: string): Promise<void> {
   const r = await fetch(url, { method: "DELETE" });
   if (!r.ok) throw new Error(`DELETE ${url} failed`);
 }
+
+export async function delJSON<T>(url: string): Promise<T> {
+  const r = await fetch(url, { method: "DELETE" });
+  if (!r.ok) {
+    const body = await r.json().catch(() => ({}));
+    throw new Error((body as { error?: string }).error ?? `DELETE ${url} failed`);
+  }
+  return r.json();
+}

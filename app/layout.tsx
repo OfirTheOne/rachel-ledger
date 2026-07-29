@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import Link from "next/link";
 import { Fraunces, Hanken_Grotesk, Spline_Sans_Mono } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/app/ui/Nav";
@@ -47,40 +48,78 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           <header
             className="rise"
-            style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 22 }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 12,
+              marginBottom: 22,
+            }}
           >
-            <span
-              aria-hidden
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <span
+                aria-hidden
+                style={{
+                  display: "grid",
+                  placeItems: "center",
+                  width: 40,
+                  height: 40,
+                  borderRadius: 13,
+                  fontFamily: "var(--font-display)",
+                  fontSize: 20,
+                  color: "var(--color-accent-contrast)",
+                  background:
+                    "linear-gradient(145deg, var(--color-accent), var(--color-accent-2))",
+                  boxShadow: "var(--shadow-md)",
+                }}
+              >
+                ₪
+              </span>
+              <div style={{ lineHeight: 1 }}>
+                <div
+                  className="font-display"
+                  style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.02em" }}
+                >
+                  Ledger
+                </div>
+                <div
+                  className="eyebrow"
+                  style={{ marginTop: 4, letterSpacing: "0.22em", fontSize: 10 }}
+                >
+                  Quiet Money
+                </div>
+              </div>
+            </div>
+
+            <Link
+              href="/settings"
+              aria-label="Settings"
               style={{
                 display: "grid",
                 placeItems: "center",
                 width: 40,
                 height: 40,
-                borderRadius: 13,
-                fontFamily: "var(--font-display)",
-                fontSize: 20,
-                color: "var(--color-accent-contrast)",
-                background:
-                  "linear-gradient(145deg, var(--color-accent), var(--color-accent-2))",
-                boxShadow: "var(--shadow-md)",
+                flexShrink: 0,
+                borderRadius: 12,
+                color: "var(--color-text-muted)",
+                background: "var(--color-surface)",
+                border: "1px solid var(--color-border)",
+                boxShadow: "var(--shadow-sm)",
               }}
             >
-              ₪
-            </span>
-            <div style={{ lineHeight: 1 }}>
-              <div
-                className="font-display"
-                style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.02em" }}
-              >
-                Ledger
-              </div>
-              <div
-                className="eyebrow"
-                style={{ marginTop: 4, letterSpacing: "0.22em", fontSize: 10 }}
-              >
-                Quiet Money
-              </div>
-            </div>
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" aria-hidden>
+                <path
+                  d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                />
+                <path
+                  d="M19.4 13a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1.08-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1.08 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                />
+              </svg>
+            </Link>
           </header>
 
           <Nav />
