@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { Nav } from "@/app/ui/Nav";
 
 export const metadata: Metadata = {
   title: "Spending",
@@ -12,6 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body>
         <main style={{ maxWidth: 520, margin: "0 auto", padding: "16px" }}>
+          <Nav />
           {children}
         </main>
       </body>
