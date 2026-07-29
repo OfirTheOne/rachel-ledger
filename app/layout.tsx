@@ -57,24 +57,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }}
           >
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <span
-                aria-hidden
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/app_icon.png"
+                alt="Ledger app icon"
+                width={42}
+                height={42}
                 style={{
-                  display: "grid",
-                  placeItems: "center",
-                  width: 40,
-                  height: 40,
+                  width: 42,
+                  height: 42,
                   borderRadius: 13,
-                  fontFamily: "var(--font-display)",
-                  fontSize: 20,
-                  color: "var(--color-accent-contrast)",
-                  background:
-                    "linear-gradient(145deg, var(--color-accent), var(--color-accent-2))",
+                  objectFit: "cover",
+                  display: "block",
+                  border: "1px solid var(--color-hairline)",
                   boxShadow: "var(--shadow-md)",
                 }}
-              >
-                ₪
-              </span>
+              />
               <div style={{ lineHeight: 1 }}>
                 <div
                   className="font-display"
