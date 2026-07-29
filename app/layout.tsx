@@ -27,7 +27,7 @@ const mono = Spline_Sans_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "rachel ledger",
+  title: "Rachel's Ledger",
   description: "A calm, tactile way to track personal spending.",
 };
 export const viewport: Viewport = {

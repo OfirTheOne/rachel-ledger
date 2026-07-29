@@ -1,5 +1,7 @@
 [build]
-  command = "prisma generate && next build"
+  # On Netlify CI, NETLIFY_DATABASE_URL is injected by the built-in database.
+  # Push the Prisma schema and seed the preset categories before building.
+  command = "prisma generate && prisma db push --accept-data-loss && prisma db seed && next build"
   publish = ".next"
 
 [[plugins]]

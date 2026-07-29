@@ -3,8 +3,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // Netlify DB auto-injects these at build & runtime. Locally, set them in .env
+  // (they can point at your local Postgres).
+  url       = env("NETLIFY_DATABASE_URL")
+  directUrl = env("NETLIFY_DATABASE_URL_UNPOOLED")
 }
 
 enum PaymentMethod {

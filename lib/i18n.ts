@@ -13,7 +13,7 @@ export function dir(locale: Locale): "rtl" | "ltr" {
 type Dict = Record<string, string>;
 
 const en: Dict = {
-  "header.brand": "rachel ledger",
+  "header.brand": "Rachel's Ledger",
   "header.tagline": "Quiet Money",
   "header.settings": "Settings",
 
