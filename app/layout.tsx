@@ -69,7 +69,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   borderRadius: 13,
                   objectFit: "cover",
                   display: "block",
-                  border: "1px solid var(--color-hairline)",
+                  border: "2px solid #ffffff",
+                  boxSizing: "content-box",
                   boxShadow: "var(--shadow-md)",
                 }}
               />
