@@ -27,7 +27,7 @@ const mono = Spline_Sans_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ledger — quiet money",
+  title: "rachel ledger",
   description: "A calm, tactile way to track personal spending.",
 };
 export const viewport: Viewport = {
@@ -71,7 +71,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/app_icon.png"
-                alt="Ledger app icon"
+                alt={translate(locale, "header.brand")}
                 width={42}
                 height={42}
                 style={{
@@ -90,7 +90,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                   className="font-display"
                   style={{ fontSize: 22, fontWeight: 600, letterSpacing: "-0.02em" }}
                 >
-                  Ledger
+                  {translate(locale, "header.brand")}
                 </div>
                 <div
                   className="eyebrow"
