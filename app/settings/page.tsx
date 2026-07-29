@@ -2,9 +2,12 @@
 import { useEffect, useState } from "react";
 import { getJSON, postJSON, patchJSON, delJSON } from "@/lib/api";
 import { Card } from "@/app/ui/Card";
+import { useT } from "@/app/ui/LanguageProvider";
+import { LOCALES, type Locale } from "@/lib/i18n";
 
 type Category = { id: string; name: string };
 const FALLBACK = "Other";
+const LOCALE_LABELS: Record<Locale, string> = { en: "English", he: "עברית" };
 
 const CHART_VARS = [
   "--color-chart-1", "--color-chart-2", "--color-chart-3",
@@ -17,6 +20,7 @@ function categoryColor(name: string) {
 }
 
 export default function SettingsPage() {
+  const { t, locale, setLocale } = useT();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [newName, setNewName] = useState("");
@@ -44,9 +48,9 @@ export default function SettingsPage() {
       const created = await postJSON<Category>("/api/categories", { name });
       setCategories((c) => [...c, created]);
       setNewName("");
-      flash(`Added “${created.name}”.`);
+      flash(t("msg.added", { name: created.name }));
     } catch {
-      setError(`Couldn’t add “${name}”. It may already exist.`);
+      setError(t("err.add", { name }));
     } finally { setBusy(false); }
   }
 
@@ -63,9 +67,9 @@ export default function SettingsPage() {
       const updated = await patchJSON<Category>(`/api/categories/${editingId}`, { name });
       setCategories((cs) => cs.map((c) => (c.id === updated.id ? updated : c)));
       setEditingId(null);
-      flash("Renamed.");
+      flash(t("msg.renamed"));
     } catch {
-      setError(`Couldn’t rename to “${name}”. It may already exist.`);
+      setError(t("err.rename", { name }));
     } finally { setBusy(false); }
   }
 
@@ -78,27 +82,78 @@ export default function SettingsPage() {
       setConfirmingId(null);
       flash(
         res.movedCount > 0
-          ? `Deleted “${c.name}”. ${res.movedCount} ${res.movedCount === 1 ? "expense" : "expenses"} moved to ${FALLBACK}.`
-          : `Deleted “${c.name}”.`,
+          ? t(res.movedCount === 1 ? "msg.deletedMoved.one" : "msg.deletedMoved.other", {
+              name: c.name,
+              count: res.movedCount,
+              fallback: FALLBACK,
+            })
+          : t("msg.deleted", { name: c.name }),
       );
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Couldn’t delete category.");
+    } catch {
+      setError(t("err.delete"));
     } finally { setBusy(false); }
   }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <div className="rise" style={{ padding: "0 4px" }}>
-        <div className="eyebrow">Preferences</div>
-        <h1 style={{ fontSize: 27, marginTop: 4 }}>Settings</h1>
+        <div className="eyebrow">{t("settings.eyebrow")}</div>
+        <h1 style={{ fontSize: 27, marginTop: 4 }}>{t("settings.title")}</h1>
       </div>
 
-      <Card delay={0} style={{ display: "grid", gap: 18 }}>
+      {/* Language */}
+      <Card delay={0} style={{ display: "grid", gap: 14 }}>
         <div>
-          <div className="eyebrow" style={{ marginBottom: 4 }}>Manage</div>
-          <h2 style={{ fontSize: 20 }}>Categories</h2>
+          <div className="eyebrow" style={{ marginBottom: 4 }}>{t("settings.displayEyebrow")}</div>
+          <h2 style={{ fontSize: 20 }}>{t("settings.language")}</h2>
           <p style={{ color: "var(--color-text-muted)", fontSize: 13.5, marginTop: 6, lineHeight: 1.5 }}>
-            Add, rename, or remove categories. Deleting one moves its expenses to “{FALLBACK}”.
+            {t("settings.languageDesc")}
+          </p>
+        </div>
+        <div
+          style={{
+            display: "flex",
+            gap: 4,
+            padding: 5,
+            borderRadius: 999,
+            background: "var(--color-surface-2)",
+            border: "1px solid var(--color-border)",
+          }}
+        >
+          {LOCALES.map((lc) => {
+            const active = lc === locale;
+            return (
+              <button
+                key={lc}
+                onClick={() => { if (!active) setLocale(lc); }}
+                style={{
+                  flex: 1,
+                  cursor: active ? "default" : "pointer",
+                  padding: "9px",
+                  borderRadius: 999,
+                  border: 0,
+                  fontSize: 14,
+                  fontWeight: active ? 600 : 500,
+                  color: active ? "var(--color-accent-contrast)" : "var(--color-text-muted)",
+                  background: active
+                    ? "linear-gradient(145deg, var(--color-accent), var(--color-accent-2))"
+                    : "transparent",
+                  transition: "color 0.2s ease, background 0.2s ease",
+                }}
+              >
+                {LOCALE_LABELS[lc]}
+              </button>
+            );
+          })}
+        </div>
+      </Card>
+
+      <Card delay={1} style={{ display: "grid", gap: 18 }}>
+        <div>
+          <div className="eyebrow" style={{ marginBottom: 4 }}>{t("settings.manage")}</div>
+          <h2 style={{ fontSize: 20 }}>{t("settings.categories")}</h2>
+          <p style={{ color: "var(--color-text-muted)", fontSize: 13.5, marginTop: 6, lineHeight: 1.5 }}>
+            {t("settings.categoriesDesc", { fallback: FALLBACK })}
           </p>
         </div>
 
@@ -108,7 +163,7 @@ export default function SettingsPage() {
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter") add(); }}
-            placeholder="New category name"
+            placeholder={t("settings.newCategory")}
             style={{
               flex: 1,
               minWidth: 0,
@@ -138,7 +193,7 @@ export default function SettingsPage() {
               whiteSpace: "nowrap",
             }}
           >
-            Add
+            {t("settings.add")}
           </button>
         </div>
 
@@ -202,8 +257,8 @@ export default function SettingsPage() {
                     <span style={{ flex: 1, color: "var(--color-text)", fontWeight: 500, fontSize: 15 }}>
                       {c.name}
                       {isFallback && (
-                        <span className="eyebrow" style={{ marginLeft: 8, fontSize: 9, opacity: 0.8 }}>
-                          fallback
+                        <span className="eyebrow" style={{ marginInlineStart: 8, fontSize: 9, opacity: 0.8 }}>
+                          {t("settings.fallback")}
                         </span>
                       )}
                     </span>
@@ -212,21 +267,21 @@ export default function SettingsPage() {
                   {/* Actions */}
                   {editing ? (
                     <div style={{ display: "flex", gap: 6 }}>
-                      <PillBtn onClick={saveEdit} disabled={busy || !editName.trim()} kind="accent">Save</PillBtn>
-                      <PillBtn onClick={() => setEditingId(null)}>Cancel</PillBtn>
+                      <PillBtn onClick={saveEdit} disabled={busy || !editName.trim()} kind="accent">{t("settings.save")}</PillBtn>
+                      <PillBtn onClick={() => setEditingId(null)}>{t("settings.cancel")}</PillBtn>
                     </div>
                   ) : confirming ? (
                     <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                      <span style={{ fontSize: 12, color: "var(--color-text-muted)" }}>Delete?</span>
-                      <PillBtn onClick={() => confirmDelete(c)} disabled={busy} kind="danger">Yes</PillBtn>
-                      <PillBtn onClick={() => setConfirmingId(null)}>No</PillBtn>
+                      <span style={{ fontSize: 12, color: "var(--color-text-muted)" }}>{t("settings.deleteQ")}</span>
+                      <PillBtn onClick={() => confirmDelete(c)} disabled={busy} kind="danger">{t("settings.yes")}</PillBtn>
+                      <PillBtn onClick={() => setConfirmingId(null)}>{t("settings.no")}</PillBtn>
                     </div>
                   ) : (
                     <div style={{ display: "flex", gap: 6 }}>
-                      <PillBtn onClick={() => startEdit(c)}>Rename</PillBtn>
+                      <PillBtn onClick={() => startEdit(c)}>{t("settings.rename")}</PillBtn>
                       {!isFallback && (
                         <PillBtn onClick={() => { setEditingId(null); setConfirmingId(c.id); setError(null); }} kind="ghostDanger">
-                          Delete
+                          {t("settings.delete")}
                         </PillBtn>
                       )}
                     </div>

@@ -4,17 +4,13 @@ import { useRouter } from "next/navigation";
 import { getJSON, postJSON } from "@/lib/api";
 import { agorotFromInput } from "@/lib/format";
 import { Card } from "@/app/ui/Card";
+import { useT } from "@/app/ui/LanguageProvider";
 
 type Category = { id: string; name: string };
-const METHODS: { value: string; label: string }[] = [
-  { value: "Cash", label: "Cash" },
-  { value: "Credit", label: "Credit" },
-  { value: "Debit", label: "Debit" },
-  { value: "BankTransfer", label: "Transfer" },
-  { value: "Other", label: "Other" },
-];
+const METHOD_VALUES = ["Cash", "Credit", "Debit", "BankTransfer", "Other"];
 
 export default function AddPage() {
+  const { t } = useT();
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [amount, setAmount] = useState("");
@@ -64,7 +60,7 @@ export default function AddPage() {
           htmlFor="amount"
           style={{ color: "var(--color-accent-contrast)", opacity: 0.8, display: "block" }}
         >
-          Amount
+          {t("add.amount")}
         </label>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
           <span
@@ -98,10 +94,10 @@ export default function AddPage() {
       </Card>
 
       <Card delay={1} style={{ display: "grid", gap: 18 }}>
-        <Field label="Shop">
+        <Field label={t("add.shop")}>
           <input
             style={inputStyle}
-            placeholder="e.g. Rami Levy"
+            placeholder={t("add.shopPlaceholder")}
             value={shop}
             onChange={(e) => setShop(e.target.value)}
             onBlur={suggest}
@@ -109,13 +105,13 @@ export default function AddPage() {
         </Field>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-          <Field label="Date">
+          <Field label={t("add.date")}>
             <input style={inputStyle} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </Field>
-          <Field label="Note">
+          <Field label={t("add.note")}>
             <input
               style={inputStyle}
-              placeholder="optional"
+              placeholder={t("add.notePlaceholder")}
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />
@@ -125,7 +121,7 @@ export default function AddPage() {
         {/* Category chips */}
         <div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-            <span className="eyebrow">Category</span>
+            <span className="eyebrow">{t("add.category")}</span>
             <button
               type="button"
               onClick={suggest}
@@ -146,7 +142,7 @@ export default function AddPage() {
               }}
             >
               <Sparkle spinning={suggesting} />
-              {suggesting ? "Thinking…" : "AI suggest"}
+              {suggesting ? t("add.thinking") : t("add.aiSuggest")}
             </button>
           </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -181,7 +177,7 @@ export default function AddPage() {
 
         {/* Payment segmented */}
         <div>
-          <span className="eyebrow" style={{ display: "block", marginBottom: 10 }}>Paid with</span>
+          <span className="eyebrow" style={{ display: "block", marginBottom: 10 }}>{t("add.paidWith")}</span>
           <div
             style={{
               display: "flex",
@@ -192,13 +188,13 @@ export default function AddPage() {
               border: "1px solid var(--color-border)",
             }}
           >
-            {METHODS.map((m) => {
-              const active = m.value === paymentMethod;
+            {METHOD_VALUES.map((value) => {
+              const active = value === paymentMethod;
               return (
                 <button
-                  key={m.value}
+                  key={value}
                   type="button"
-                  onClick={() => setPaymentMethod(m.value)}
+                  onClick={() => setPaymentMethod(value)}
                   style={{
                     flex: 1,
                     cursor: "pointer",
@@ -213,7 +209,7 @@ export default function AddPage() {
                     transition: "all 0.18s ease",
                   }}
                 >
-                  {m.label}
+                  {t(`method.${value}`)}
                 </button>
               );
             })}
@@ -241,7 +237,7 @@ export default function AddPage() {
           transition: "opacity 0.2s ease",
         }}
       >
-        {saving ? "Saving…" : "Save expense"}
+        {saving ? t("add.saving") : t("add.save")}
       </button>
     </div>
   );

@@ -72,6 +72,8 @@ h1, h2, h3 {
   font-family: var(--font-mono);
   font-feature-settings: "tnum" 1, "zero" 1;
   letter-spacing: -0.02em;
+  /* keep money/number runs well-formed inside RTL text */
+  unicode-bidi: isolate;
 }
 
 /* Eyebrow / section label */

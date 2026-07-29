@@ -1,15 +1,17 @@
 "use client";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useT } from "@/app/ui/LanguageProvider";
 
 const LINKS = [
-  { href: "/", label: "Overview" },
-  { href: "/add", label: "Add" },
-  { href: "/expenses", label: "Ledger" },
+  { href: "/", key: "nav.overview" },
+  { href: "/add", key: "nav.add" },
+  { href: "/expenses", key: "nav.ledger" },
 ];
 
 export function Nav() {
   const pathname = usePathname();
+  const { t } = useT();
   return (
     <nav
       className="rise"
@@ -49,7 +51,7 @@ export function Nav() {
               transition: "color 0.2s ease, background 0.2s ease",
             }}
           >
-            {l.label}
+            {t(l.key)}
           </Link>
         );
       })}

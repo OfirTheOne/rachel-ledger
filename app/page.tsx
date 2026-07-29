@@ -4,6 +4,7 @@ import { getJSON, postJSON } from "@/lib/api";
 import { formatMoney } from "@/lib/format";
 import { Card } from "@/app/ui/Card";
 import { CategoryChart, DayOfWeekChart } from "@/app/ui/Charts";
+import { useT } from "@/app/ui/LanguageProvider";
 
 type Kpis = {
   range: string; start: string; end: string; total: number; count: number;
@@ -22,6 +23,7 @@ function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
 }
 
 export default function Dashboard() {
+  const { t, locale } = useT();
   const [range, setRange] = useState<"week" | "month">("month");
   const [kpis, setKpis] = useState<Kpis | null>(null);
   const [insights, setInsights] = useState<{ insights: string[]; suggestions: string[] } | null>(null);
@@ -38,6 +40,7 @@ export default function Dashboard() {
     setAnalyzing(true); setAiError(false);
     try {
       const r = await postJSON<{ insights: string[]; suggestions: string[] }>("/api/gemini/insights", {
+        locale,
         periodSummary: { total: kpis.total, byCategory: kpis.byCategory, byShop: kpis.byShop, byDayOfWeek: kpis.byDayOfWeek },
       });
       setInsights(r);
@@ -45,7 +48,7 @@ export default function Dashboard() {
     finally { setAnalyzing(false); }
   }
 
-  const periodLabel = range === "week" ? "This week" : "This month";
+  const periodLabel = range === "week" ? t("dash.week") : t("dash.month");
   const maxShop = kpis?.byShop[0]?.total ?? 0;
 
   return (
@@ -85,7 +88,7 @@ export default function Dashboard() {
                 transition: "color 0.2s ease, background 0.2s ease",
               }}
             >
-              {r === "week" ? "This week" : "This month"}
+              {r === "week" ? t("dash.week") : t("dash.month")}
             </button>
           );
         })}
@@ -104,7 +107,7 @@ export default function Dashboard() {
               className="eyebrow"
               style={{ color: "var(--color-accent-contrast)", opacity: 0.8 }}
             >
-              Total spent · {periodLabel}
+              {t("dash.totalSpent")} · {periodLabel}
             </div>
             <div
               className="mono"
@@ -126,13 +129,16 @@ export default function Dashboard() {
                 opacity: 0.85,
               }}
             >
-              {kpis.count} {kpis.count === 1 ? "expense" : "expenses"} recorded
+              {t(
+                kpis.count === 1 ? "dash.expensesRecorded.one" : "dash.expensesRecorded.other",
+                { count: kpis.count },
+              )}
             </div>
           </Card>
 
           {/* By category donut */}
           <Card delay={1}>
-            <SectionTitle eyebrow="Where it went" title="By category" />
+            <SectionTitle eyebrow={t("dash.eyebrow.where")} title={t("dash.byCategory")} />
             {kpis.byCategory.length ? (
               <CategoryChart data={kpis.byCategory} />
             ) : (
@@ -142,13 +148,13 @@ export default function Dashboard() {
 
           {/* By day of week */}
           <Card delay={2}>
-            <SectionTitle eyebrow="Rhythm" title="By day of week" />
+            <SectionTitle eyebrow={t("dash.eyebrow.rhythm")} title={t("dash.byDayOfWeek")} />
             <DayOfWeekChart data={kpis.byDayOfWeek} />
           </Card>
 
           {/* Top shops with mini bars */}
           <Card delay={3}>
-            <SectionTitle eyebrow="Merchants" title="Top shops" />
+            <SectionTitle eyebrow={t("dash.eyebrow.merchants")} title={t("dash.topShops")} />
             {kpis.byShop.length ? (
               <div style={{ display: "grid", gap: 14 }}>
                 {kpis.byShop.slice(0, 5).map((s, i) => (
@@ -164,7 +170,7 @@ export default function Dashboard() {
                       <span style={{ color: "var(--color-text)", fontWeight: 500 }}>
                         <span
                           className="mono"
-                          style={{ color: "var(--color-text-muted)", fontSize: 12, marginRight: 8 }}
+                          style={{ color: "var(--color-text-muted)", fontSize: 12, marginInlineEnd: 8 }}
                         >
                           {String(i + 1).padStart(2, "0")}
                         </span>
@@ -203,7 +209,7 @@ export default function Dashboard() {
 
           {/* AI insights */}
           <Card delay={4}>
-            <SectionTitle eyebrow="Assistant" title="Insights" />
+            <SectionTitle eyebrow={t("dash.eyebrow.assistant")} title={t("dash.insights")} />
             <button
               onClick={analyze}
               disabled={analyzing}
@@ -226,19 +232,19 @@ export default function Dashboard() {
               }}
             >
               <Sparkle spinning={analyzing} />
-              {analyzing ? "Reading your spending…" : "Analyze my spending"}
+              {analyzing ? t("dash.analyzing") : t("dash.analyze")}
             </button>
 
             {aiError && (
               <p style={{ color: "var(--color-text-muted)", marginTop: 12, fontSize: 14 }}>
-                Couldn&apos;t analyze right now — please try again.
+                {t("dash.aiError")}
               </p>
             )}
 
             {insights && (
               <div style={{ marginTop: 18, display: "grid", gap: 18 }}>
-                <InsightBlock title="What stood out" items={insights.insights ?? []} accent="var(--color-accent)" />
-                <InsightBlock title="Gentle suggestions" items={insights.suggestions ?? []} accent="var(--color-accent-2)" />
+                <InsightBlock title={t("dash.stoodOut")} items={insights.insights ?? []} accent="var(--color-accent)" />
+                <InsightBlock title={t("dash.suggestions")} items={insights.suggestions ?? []} accent="var(--color-accent-2)" />
               </div>
             )}
           </Card>
@@ -276,9 +282,10 @@ function InsightBlock({ title, items, accent }: { title: string; items: string[]
 }
 
 function Empty() {
+  const { t } = useT();
   return (
     <p style={{ color: "var(--color-text-muted)", fontSize: 14, padding: "8px 0" }}>
-      Nothing here yet for this period.
+      {t("dash.empty")}
     </p>
   );
 }

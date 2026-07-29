@@ -1,8 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { Fraunces, Hanken_Grotesk, Spline_Sans_Mono } from "next/font/google";
 import "./globals.css";
 import { Nav } from "@/app/ui/Nav";
+import { LanguageProvider } from "@/app/ui/LanguageProvider";
+import { dir, normalizeLocale, translate } from "@/lib/i18n";
 
 const display = Fraunces({
   subsets: ["latin"],
@@ -33,10 +36,18 @@ export const viewport: Viewport = {
   themeColor: "#efeae0",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const store = await cookies();
+  const locale = normalizeLocale(store.get("lang")?.value);
+
   return (
-    <html lang="en" className={`${display.variable} ${sans.variable} ${mono.variable}`}>
+    <html
+      lang={locale}
+      dir={dir(locale)}
+      className={`${display.variable} ${sans.variable} ${mono.variable}`}
+    >
       <body>
+        <LanguageProvider locale={locale}>
         <div
           style={{
             position: "relative",
@@ -85,14 +96,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   className="eyebrow"
                   style={{ marginTop: 4, letterSpacing: "0.22em", fontSize: 10 }}
                 >
-                  Quiet Money
+                  {translate(locale, "header.tagline")}
                 </div>
               </div>
             </div>
 
             <Link
               href="/settings"
-              aria-label="Settings"
+              aria-label={translate(locale, "header.settings")}
               style={{
                 display: "grid",
                 placeItems: "center",
@@ -123,7 +134,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
           <Nav />
           {children}
-        </div>
+          </div>
+        </LanguageProvider>
       </body>
     </html>
   );

@@ -11,6 +11,8 @@ import {
   Pie,
 } from "recharts";
 import { formatMoney } from "@/lib/format";
+import { useT } from "@/app/ui/LanguageProvider";
+import { dowShort, dowFull } from "@/lib/i18n";
 
 const CHART_VARS = [
   "--color-chart-1",
@@ -20,8 +22,6 @@ const CHART_VARS = [
   "--color-chart-5",
   "--color-chart-6",
 ];
-const DOW = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const DOW_FULL = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 /* ---- Shared themed tooltip ---- */
 function MoneyTooltip({
@@ -63,6 +63,7 @@ function MoneyTooltip({
 
 /* ---- Category donut with center total + legend ---- */
 export function CategoryChart({ data }: { data: { name: string; total: number }[] }) {
+  const { t } = useT();
   const total = data.reduce((s, d) => s + d.total, 0);
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -109,7 +110,7 @@ export function CategoryChart({ data }: { data: { name: string; total: number }[
           }}
         >
           <div>
-            <div className="eyebrow" style={{ fontSize: 10 }}>Total</div>
+            <div className="eyebrow" style={{ fontSize: 10 }}>{t("chart.total")}</div>
             <div
               className="mono"
               style={{ fontSize: 22, fontWeight: 600, color: "var(--color-text)", marginTop: 2 }}
@@ -139,12 +140,12 @@ export function CategoryChart({ data }: { data: { name: string; total: number }[
                 }}
               />
               <span style={{ color: "var(--color-text)", flex: 1 }}>{d.name}</span>
-              <span style={{ color: "var(--color-text-muted)", fontSize: 12, width: 34, textAlign: "right" }}>
+              <span style={{ color: "var(--color-text-muted)", fontSize: 12, width: 34, textAlign: "end" }}>
                 {pct}%
               </span>
               <span
                 className="mono"
-                style={{ color: "var(--color-text)", fontWeight: 500, minWidth: 74, textAlign: "right" }}
+                style={{ color: "var(--color-text)", fontWeight: 500, minWidth: 74, textAlign: "end" }}
               >
                 {formatMoney(d.total)}
               </span>
@@ -158,7 +159,10 @@ export function CategoryChart({ data }: { data: { name: string; total: number }[
 
 /* ---- Day-of-week gradient bars, peak day highlighted ---- */
 export function DayOfWeekChart({ data }: { data: { day: number; total: number }[] }) {
-  const shaped = data.map((d) => ({ label: DOW[d.day], _label: DOW_FULL[d.day], total: d.total }));
+  const { locale } = useT();
+  const short = dowShort(locale);
+  const full = dowFull(locale);
+  const shaped = data.map((d) => ({ label: short[d.day], _label: full[d.day], total: d.total }));
   const max = Math.max(...shaped.map((s) => s.total), 0);
   return (
     <ResponsiveContainer width="100%" height={180}>

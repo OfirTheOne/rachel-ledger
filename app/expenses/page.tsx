@@ -4,6 +4,8 @@ import Link from "next/link";
 import { getJSON, del } from "@/lib/api";
 import { formatMoney } from "@/lib/format";
 import { Card } from "@/app/ui/Card";
+import { useT } from "@/app/ui/LanguageProvider";
+import type { Locale } from "@/lib/i18n";
 
 type Expense = {
   id: string;
@@ -23,12 +25,17 @@ function categoryColor(name: string) {
   for (let i = 0; i < name.length; i++) h = (h + name.charCodeAt(i)) % CHART_VARS.length;
   return `var(${CHART_VARS[h]})`;
 }
-function prettyDate(iso: string) {
+function prettyDate(iso: string, locale: Locale) {
   const d = new Date(`${iso.slice(0, 10)}T00:00:00`);
-  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+  return d.toLocaleDateString(locale === "he" ? "he-IL" : "en-US", {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
 }
 
 export default function ExpensesPage() {
+  const { t, locale } = useT();
   const [items, setItems] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -58,9 +65,9 @@ export default function ExpensesPage() {
     return (
       <Card style={{ textAlign: "center", padding: "44px 24px" }}>
         <div style={{ fontSize: 34, marginBottom: 10 }} aria-hidden>🪶</div>
-        <h2 style={{ fontSize: 22, marginBottom: 6 }}>An empty ledger</h2>
+        <h2 style={{ fontSize: 22, marginBottom: 6 }}>{t("list.emptyTitle")}</h2>
         <p style={{ color: "var(--color-text-muted)", fontSize: 14.5, marginBottom: 20 }}>
-          Nothing recorded yet. Your first entry starts the story.
+          {t("list.emptyBody")}
         </p>
         <Link
           href="/add"
@@ -76,7 +83,7 @@ export default function ExpensesPage() {
             boxShadow: "var(--shadow-md)",
           }}
         >
-          Add an expense
+          {t("list.addCta")}
         </Link>
       </Card>
     );
@@ -90,9 +97,11 @@ export default function ExpensesPage() {
         className="rise"
         style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 4px 2px" }}
       >
-        <div className="eyebrow">{items.length} entries</div>
+        <div className="eyebrow">
+          {t(items.length === 1 ? "list.entries.one" : "list.entries.other", { count: items.length })}
+        </div>
         <div className="mono" style={{ fontSize: 13, color: "var(--color-text-muted)" }}>
-          {formatMoney(total)} total
+          {t("list.total", { amount: formatMoney(total) })}
         </div>
       </div>
 
@@ -140,7 +149,7 @@ export default function ExpensesPage() {
               {e.shop}
             </div>
             <div style={{ color: "var(--color-text-muted)", fontSize: 12.5, marginTop: 2 }}>
-              {e.category.name} · {prettyDate(e.date)}
+              {e.category.name} · {prettyDate(e.date, locale)}
               {e.note ? ` · ${e.note}` : ""}
             </div>
           </div>

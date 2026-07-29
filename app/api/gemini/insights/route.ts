@@ -31,13 +31,15 @@ function normalize(summary: PeriodSummary) {
 
 export async function POST(req: NextRequest) {
   try {
-    const { periodSummary } = await req.json();
+    const { periodSummary, locale } = await req.json();
     const model = getModel();
     const summary = normalize(periodSummary ?? {});
+    const language = locale === "he" ? "Hebrew" : "English";
     const prompt =
       `You are a calm, encouraging personal finance assistant. All amounts are in ILS (₪) ` +
       `and are already in whole shekels (e.g. 1375.40 means ₪1,375.40). ` +
       `Refer to days by their names and format money with the ₪ symbol. ` +
+      `Write every insight and suggestion in ${language}. ` +
       `Given this spending summary JSON, return ONLY JSON ` +
       `{"insights": string[] (3-5 short observations), "suggestions": string[] (2-4 gentle, actionable tips)}.\n` +
       `Summary: ${JSON.stringify(summary)}`;
