@@ -9,7 +9,7 @@ A mobile-first personal finance app built with Next.js, Prisma, and Google Gemin
 - **8 Preset Categories**: Groceries, Dining, Transport, Utilities, Shopping, Health, Entertainment, Other
 - **Editable Categories**: Create, rename, and archive categories as needed
 - **Single Currency**: All amounts tracked in Israeli Shekels (₪) as integer agorot (1 shekel = 100 agorot)
-- **Multiple Payment Methods**: Cash, Credit, Debit, Bank Transfer, Other
+- **Multiple Payment Methods**: Cash, Credit, Debit, Bank Transfer (`BankTransfer` enum), Other
 
 ### Analytics (Read-Only)
 - **Weekly & Monthly Views**: Toggle between 7-day and 30-day time periods
@@ -142,15 +142,12 @@ npm start
    - Build command runs: `prisma generate && next build`
    - Deployments happen automatically on every push to your main branch
 
-5. **Seed Categories on First Deploy**:
-   - After first deployment, run the seed script to populate the 8 default categories:
+5. **Seed Categories Locally Before Deploying**:
+   - After pushing the schema with `npm run db:push`, seed the 8 default categories locally:
      ```bash
-     curl https://your-site.netlify.app/api/seed
+     npm run db:seed
      ```
-   - Or use Netlify CLI:
-     ```bash
-     netlify functions:invoke db:seed
-     ```
+   - This requires your `.env` file to have `DATABASE_URL` pointing to your provisioned Neon or Netlify DB. Run this once locally before your first deployment so the categories are already in the database.
 
 ## Environment Variables Reference
 
@@ -168,11 +165,17 @@ See `.env.example` for format examples.
 ├── app/                        # Next.js App Router
 │   ├── page.tsx               # Dashboard (weekly/monthly analytics)
 │   ├── layout.tsx             # Root layout with theme provider
-│   ├── api/
-│   │   ├── expenses/          # Expense CRUD endpoints
-│   │   ├── categories/        # Category management endpoints
-│   │   └── insights/          # AI insights generation
-│   └── entries/               # Expense entry form page
+│   ├── add/                   # Expense entry form page
+│   ├── expenses/              # Expense list page
+│   └── api/
+│       ├── expenses/          # GET/POST expenses
+│       ├── expenses/[id]/     # GET/PUT/DELETE single expense
+│       ├── categories/        # GET/POST categories
+│       ├── categories/[id]/   # GET/PUT/DELETE single category
+│       ├── gemini/
+│       │   ├── categorize/    # AI category suggestions
+│       │   └── insights/      # AI spending insights
+│       └── kpis/              # KPI aggregation endpoints
 ├── lib/
 │   ├── gemini.ts              # Gemini AI configuration
 │   ├── kpi.ts                 # KPI calculation logic (tested)
