@@ -6,7 +6,13 @@ import { agorotFromInput } from "@/lib/format";
 import { Card } from "@/app/ui/Card";
 
 type Category = { id: string; name: string };
-const METHODS = ["Cash","Credit","Debit","BankTransfer","Other"];
+const METHODS: { value: string; label: string }[] = [
+  { value: "Cash", label: "Cash" },
+  { value: "Credit", label: "Credit" },
+  { value: "Debit", label: "Debit" },
+  { value: "BankTransfer", label: "Transfer" },
+  { value: "Other", label: "Other" },
+];
 
 export default function AddPage() {
   const router = useRouter();
@@ -47,32 +53,234 @@ export default function AddPage() {
     } finally { setSaving(false); }
   }
 
-  const field = { width: "100%", padding: "10px 12px", borderRadius: 12, border: "1px solid var(--color-border)", background: "var(--color-bg)", color: "var(--color-text)", marginTop: 6 } as const;
-  const label = { fontSize: 13, color: "var(--color-text-muted)" } as const;
+  const canSave = amount !== "" && shop !== "" && categoryId !== "";
 
   return (
-    <Card>
-      <h1 style={{ marginBottom: 16, color: "var(--color-text)" }}>Add expense</h1>
-      <label style={label}>Amount (₪)<input style={field} inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} /></label>
-      <label style={label}>Date<input style={field} type="date" value={date} onChange={(e) => setDate(e.target.value)} /></label>
-      <label style={label}>Shop<input style={field} value={shop} onChange={(e) => setShop(e.target.value)} onBlur={suggest} /></label>
-      <label style={label}>Note<input style={field} value={note} onChange={(e) => setNote(e.target.value)} /></label>
-      <label style={label}>Category
-        <select style={field} value={categoryId} onChange={(e) => setCategoryId(e.target.value)}>
-          {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-        </select>
-      </label>
-      <button onClick={suggest} disabled={suggesting || !shop} style={{ marginTop: 8, fontSize: 13, background: "transparent", color: "var(--color-accent)", border: "1px solid var(--color-accent)", borderRadius: 10, padding: "6px 10px" }}>
-        {suggesting ? "Thinking…" : "✨ AI suggest category"}
-      </button>
-      <label style={label}>Payment
-        <select style={field} value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
-          {METHODS.map((m) => <option key={m} value={m}>{m}</option>)}
-        </select>
-      </label>
-      <button onClick={save} disabled={saving} style={{ marginTop: 20, width: "100%", background: "var(--color-accent)", color: "var(--color-accent-contrast)", border: 0, borderRadius: 12, padding: "12px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      {/* Amount hero */}
+      <Card variant="accent" delay={0} style={{ padding: "22px 24px" }}>
+        <label
+          className="eyebrow"
+          htmlFor="amount"
+          style={{ color: "var(--color-accent-contrast)", opacity: 0.8, display: "block" }}
+        >
+          Amount
+        </label>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
+          <span
+            className="mono"
+            style={{ fontSize: 40, fontWeight: 500, color: "var(--color-accent-contrast)", opacity: 0.85 }}
+          >
+            ₪
+          </span>
+          <input
+            id="amount"
+            inputMode="decimal"
+            placeholder="0.00"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className="mono"
+            style={{
+              flex: 1,
+              width: "100%",
+              minWidth: 0,
+              border: 0,
+              outline: "none",
+              background: "transparent",
+              color: "var(--color-accent-contrast)",
+              fontSize: "clamp(40px, 13vw, 52px)",
+              fontWeight: 600,
+              letterSpacing: "-0.03em",
+              padding: 0,
+            }}
+          />
+        </div>
+      </Card>
+
+      <Card delay={1} style={{ display: "grid", gap: 18 }}>
+        <Field label="Shop">
+          <input
+            style={inputStyle}
+            placeholder="e.g. Rami Levy"
+            value={shop}
+            onChange={(e) => setShop(e.target.value)}
+            onBlur={suggest}
+          />
+        </Field>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+          <Field label="Date">
+            <input style={inputStyle} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          </Field>
+          <Field label="Note">
+            <input
+              style={inputStyle}
+              placeholder="optional"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </Field>
+        </div>
+
+        {/* Category chips */}
+        <div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            <span className="eyebrow">Category</span>
+            <button
+              type="button"
+              onClick={suggest}
+              disabled={suggesting || !shop}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+                cursor: shop ? "pointer" : "default",
+                fontSize: 12.5,
+                fontWeight: 600,
+                color: "var(--color-accent)",
+                background: "var(--color-accent-soft)",
+                border: "1px solid transparent",
+                borderRadius: 999,
+                padding: "5px 11px",
+                opacity: !shop ? 0.5 : 1,
+              }}
+            >
+              <Sparkle spinning={suggesting} />
+              {suggesting ? "Thinking…" : "AI suggest"}
+            </button>
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {categories.map((c) => {
+              const active = c.id === categoryId;
+              return (
+                <button
+                  key={c.id}
+                  type="button"
+                  onClick={() => setCategoryId(c.id)}
+                  style={{
+                    cursor: "pointer",
+                    padding: "8px 14px",
+                    borderRadius: 999,
+                    fontSize: 14,
+                    fontWeight: active ? 600 : 500,
+                    color: active ? "var(--color-accent-contrast)" : "var(--color-text)",
+                    background: active
+                      ? "linear-gradient(145deg, var(--color-accent), var(--color-accent-2))"
+                      : "var(--color-surface-2)",
+                    border: `1px solid ${active ? "transparent" : "var(--color-border)"}`,
+                    boxShadow: active ? "var(--shadow-sm)" : "none",
+                    transition: "all 0.18s ease",
+                  }}
+                >
+                  {c.name}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Payment segmented */}
+        <div>
+          <span className="eyebrow" style={{ display: "block", marginBottom: 10 }}>Paid with</span>
+          <div
+            style={{
+              display: "flex",
+              gap: 4,
+              padding: 4,
+              borderRadius: 14,
+              background: "var(--color-surface-2)",
+              border: "1px solid var(--color-border)",
+            }}
+          >
+            {METHODS.map((m) => {
+              const active = m.value === paymentMethod;
+              return (
+                <button
+                  key={m.value}
+                  type="button"
+                  onClick={() => setPaymentMethod(m.value)}
+                  style={{
+                    flex: 1,
+                    cursor: "pointer",
+                    padding: "9px 4px",
+                    borderRadius: 10,
+                    border: 0,
+                    fontSize: 13,
+                    fontWeight: active ? 600 : 500,
+                    color: active ? "var(--color-text)" : "var(--color-text-muted)",
+                    background: active ? "var(--color-surface)" : "transparent",
+                    boxShadow: active ? "var(--shadow-sm)" : "none",
+                    transition: "all 0.18s ease",
+                  }}
+                >
+                  {m.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </Card>
+
+      <button
+        onClick={save}
+        disabled={saving || !canSave}
+        className="rise"
+        style={{
+          width: "100%",
+          cursor: canSave && !saving ? "pointer" : "default",
+          padding: "16px",
+          border: 0,
+          borderRadius: "var(--radius)",
+          fontSize: 16,
+          fontWeight: 600,
+          color: "var(--color-accent-contrast)",
+          background: "linear-gradient(145deg, var(--color-accent), var(--color-accent-2))",
+          boxShadow: "var(--shadow-lg)",
+          opacity: canSave && !saving ? 1 : 0.55,
+          animationDelay: "0.18s",
+          transition: "opacity 0.2s ease",
+        }}
+      >
         {saving ? "Saving…" : "Save expense"}
       </button>
-    </Card>
+    </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label style={{ display: "block" }}>
+      <span className="eyebrow" style={{ display: "block", marginBottom: 8 }}>{label}</span>
+      {children}
+    </label>
+  );
+}
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "12px 14px",
+  borderRadius: 13,
+  border: "1px solid var(--color-border)",
+  background: "var(--color-surface-2)",
+  color: "var(--color-text)",
+  outline: "none",
+  fontSize: 15,
+};
+
+function Sparkle({ spinning }: { spinning: boolean }) {
+  return (
+    <svg
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="none"
+      style={spinning ? { animation: "spin 1.1s linear infinite" } : undefined}
+      aria-hidden
+    >
+      <path
+        d="M12 2l1.9 5.6a4 4 0 0 0 2.5 2.5L22 12l-5.6 1.9a4 4 0 0 0-2.5 2.5L12 22l-1.9-5.6a4 4 0 0 0-2.5-2.5L2 12l5.6-1.9a4 4 0 0 0 2.5-2.5L12 2z"
+        fill="currentColor"
+      />
+    </svg>
   );
 }

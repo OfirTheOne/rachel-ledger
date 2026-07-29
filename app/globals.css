@@ -1,9 +1,122 @@
 @import "tailwindcss";
 @import "./theme.css";
 
+/* ---- Global design tokens (shape, elevation, motion) ---- */
+:root {
+  --radius-sm: 12px;
+  --radius: 18px;
+  --radius-lg: 26px;
+
+  --shadow-sm: 0 1px 2px rgba(var(--shadow-color), 0.06);
+  --shadow-md:
+    0 2px 4px rgba(var(--shadow-color), 0.05),
+    0 8px 20px rgba(var(--shadow-color), 0.08);
+  --shadow-lg:
+    0 4px 8px rgba(var(--shadow-color), 0.06),
+    0 20px 48px rgba(var(--shadow-color), 0.14);
+
+  --font-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --font-sans: "Hanken Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Spline Sans Mono", ui-monospace, "SFMono-Regular", monospace;
+}
+
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+html, body { max-width: 100%; overflow-x: hidden; }
+
 body {
-  background: var(--color-bg);
+  min-height: 100dvh;
   color: var(--color-text);
-  font-family: system-ui, -apple-system, "Inter", sans-serif;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1.5;
+  letter-spacing: -0.006em;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+
+  /* Layered atmosphere: base paper + soft radial mesh, fixed to the viewport */
+  background-color: var(--color-bg);
+  background-image:
+    radial-gradient(60% 55% at 12% 4%, var(--mesh-1), transparent 60%),
+    radial-gradient(55% 45% at 92% 8%, var(--mesh-2), transparent 62%),
+    radial-gradient(70% 60% at 78% 100%, var(--mesh-3), transparent 65%);
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* Fine grain overlay for tactile paper feel */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/%3E%3C/svg%3E");
+}
+
+/* Headings use the display serif with optical sizing */
+h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  margin: 0;
+  font-optical-sizing: auto;
+}
+
+.font-display { font-family: var(--font-display); }
+.mono {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum" 1, "zero" 1;
+  letter-spacing: -0.02em;
+}
+
+/* Eyebrow / section label */
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+/* Staggered entrance */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.rise { opacity: 0; animation: rise 0.62s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(
+    100deg,
+    var(--color-surface-2) 30%,
+    var(--color-accent-soft) 50%,
+    var(--color-surface-2) 70%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
+  border-radius: var(--radius-sm);
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+::selection { background: var(--color-accent-soft); color: var(--color-text); }
+
+/* Inputs inherit the type system */
+input, select, button, textarea { font-family: inherit; font-size: inherit; }
+
+/* Tame the native date/select controls to the palette */
+input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.55; cursor: pointer; }
+
+@media (prefers-reduced-motion: reduce) {
+  .rise, .skeleton { animation: none; opacity: 1; }
 }

@@ -1,12 +1,58 @@
+"use client";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+
+const LINKS = [
+  { href: "/", label: "Overview" },
+  { href: "/add", label: "Add" },
+  { href: "/expenses", label: "Ledger" },
+];
 
 export function Nav() {
-  const link = { color: "var(--color-text-muted)", textDecoration: "none", fontSize: 14 } as const;
+  const pathname = usePathname();
   return (
-    <nav style={{ display: "flex", gap: 16, justifyContent: "center", padding: "12px 0 20px" }}>
-      <Link href="/" style={link}>Dashboard</Link>
-      <Link href="/add" style={link}>Add</Link>
-      <Link href="/expenses" style={link}>Expenses</Link>
+    <nav
+      className="rise"
+      style={{
+        display: "flex",
+        gap: 4,
+        padding: 5,
+        marginBottom: 22,
+        borderRadius: 999,
+        background: "var(--color-surface)",
+        border: "1px solid var(--color-border)",
+        boxShadow: "var(--shadow-sm)",
+        animationDelay: "0.05s",
+      }}
+    >
+      {LINKS.map((l) => {
+        const active = pathname === l.href;
+        return (
+          <Link
+            key={l.href}
+            href={l.href}
+            aria-current={active ? "page" : undefined}
+            style={{
+              flex: 1,
+              textAlign: "center",
+              textDecoration: "none",
+              padding: "9px 10px",
+              borderRadius: 999,
+              fontSize: 14,
+              fontWeight: active ? 600 : 500,
+              letterSpacing: "-0.01em",
+              color: active ? "var(--color-accent-contrast)" : "var(--color-text-muted)",
+              background: active
+                ? "linear-gradient(145deg, var(--color-accent), var(--color-accent-2))"
+                : "transparent",
+              boxShadow: active ? "var(--shadow-sm)" : "none",
+              transition: "color 0.2s ease, background 0.2s ease",
+            }}
+          >
+            {l.label}
+          </Link>
+        );
+      })}
     </nav>
   );
 }

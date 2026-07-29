@@ -1,46 +1,196 @@
-/* Default palette: Sage green + warm sand (light) */
+/* ============================================================================
+   Quiet Ledger — token system
+   Every color is a token. Swap a palette by setting <html data-palette="...">.
+   Each palette defines: surfaces, ink, borders, a two-stop accent gradient,
+   a tinted shadow color, a 3-color background mesh, and 6 chart hues.
+   ========================================================================== */
+
+/* -------- Default palette: Sage & Sand (light) -------- */
 :root {
-  --color-bg: #f4f1ea;
-  --color-surface: #fbf9f4;
-  --color-text: #3a3f36;
-  --color-text-muted: #7c8073;
-  --color-border: #e3ddd0;
-  --color-accent: #7a9471;
-  --color-accent-contrast: #ffffff;
-  --color-chart-1: #7a9471;
-  --color-chart-2: #a7b8a0;
-  --color-chart-3: #c9a27a;
+  --color-bg: #efeae0;
+  --color-surface: #fbf8f2;
+  --color-surface-2: #f4efe4;
+  --color-text: #2c3126;
+  --color-text-muted: #857f6d;
+  --color-border: #e6dfce;
+  --color-hairline: rgba(44, 49, 38, 0.07);
+
+  --color-accent: #6f8f5c;
+  --color-accent-2: #c79a54;
+  --color-accent-soft: rgba(111, 143, 92, 0.12);
+  --color-accent-contrast: #fdfcf6;
+
+  --shadow-color: 44, 40, 24;
+  --mesh-1: rgba(150, 178, 116, 0.30);
+  --mesh-2: rgba(213, 170, 86, 0.24);
+  --mesh-3: rgba(158, 143, 176, 0.16);
+
+  --color-chart-1: #6f8f5c;
+  --color-chart-2: #adbd93;
+  --color-chart-3: #c79a54;
   --color-chart-4: #9a8fb0;
-  --color-chart-5: #d0b25e;
+  --color-chart-5: #d9b45f;
   --color-chart-6: #6f9a9a;
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg: #23271f;
-    --color-surface: #2c3129;
-    --color-text: #e7e6de;
-    --color-text-muted: #a3a89a;
-    --color-border: #3a4034;
-    --color-accent: #8fae85;
-    --color-accent-contrast: #1c2018;
+    --color-bg: #1a1e16;
+    --color-surface: #24291f;
+    --color-surface-2: #2c3227;
+    --color-text: #eae7db;
+    --color-text-muted: #9aa08a;
+    --color-border: #353b2d;
+    --color-hairline: rgba(255, 255, 255, 0.06);
+
+    --color-accent: #93b17f;
+    --color-accent-2: #dcb762;
+    --color-accent-soft: rgba(147, 177, 127, 0.16);
+    --color-accent-contrast: #161a10;
+
+    --shadow-color: 0, 0, 0;
+    --mesh-1: rgba(120, 152, 88, 0.22);
+    --mesh-2: rgba(200, 160, 78, 0.16);
+    --mesh-3: rgba(150, 138, 180, 0.12);
   }
 }
-/* Alternative palettes (swap by setting <html data-palette="..."> ) */
+
+/* -------- Dusty Blue & Mist -------- */
 :root[data-palette="blue"] {
-  --color-bg: #eef1f4; --color-surface: #f8fafb; --color-text: #333a40;
-  --color-text-muted: #79838c; --color-border: #dce1e6; --color-accent: #7593ab;
-  --color-accent-contrast: #ffffff; --color-chart-1: #7593ab; --color-chart-2: #a8bccb;
-  --color-chart-3: #c9a27a; --color-chart-4: #9a8fb0; --color-chart-5: #6f9a9a; --color-chart-6: #d0b25e;
+  --color-bg: #e9edf1;
+  --color-surface: #f7fafc;
+  --color-surface-2: #eef3f7;
+  --color-text: #2b333b;
+  --color-text-muted: #78838d;
+  --color-border: #d9e1e8;
+  --color-hairline: rgba(43, 51, 59, 0.07);
+
+  --color-accent: #5a7f9e;
+  --color-accent-2: #d98c6a;
+  --color-accent-soft: rgba(90, 127, 158, 0.12);
+  --color-accent-contrast: #fbfdfe;
+
+  --shadow-color: 30, 44, 58;
+  --mesh-1: rgba(110, 150, 188, 0.30);
+  --mesh-2: rgba(214, 142, 108, 0.20);
+  --mesh-3: rgba(150, 168, 190, 0.16);
+
+  --color-chart-1: #5a7f9e;
+  --color-chart-2: #9db6c8;
+  --color-chart-3: #d98c6a;
+  --color-chart-4: #8f9bb5;
+  --color-chart-5: #6f9a9a;
+  --color-chart-6: #d9b45f;
 }
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="blue"] {
+    --color-bg: #151b21;
+    --color-surface: #1e262d;
+    --color-surface-2: #253038;
+    --color-text: #e6ecf1;
+    --color-text-muted: #8f9aa5;
+    --color-border: #2f3b45;
+    --color-hairline: rgba(255, 255, 255, 0.06);
+    --color-accent: #7ba3c2;
+    --color-accent-2: #e3a184;
+    --color-accent-soft: rgba(123, 163, 194, 0.16);
+    --color-accent-contrast: #10161b;
+    --shadow-color: 0, 0, 0;
+    --mesh-1: rgba(90, 130, 168, 0.22);
+    --mesh-2: rgba(194, 122, 92, 0.16);
+    --mesh-3: rgba(130, 148, 172, 0.12);
+  }
+}
+
+/* -------- Warm Earth -------- */
 :root[data-palette="earth"] {
-  --color-bg: #f2ece4; --color-surface: #faf6f0; --color-text: #40382f;
-  --color-text-muted: #8a8072; --color-border: #e4dacc; --color-accent: #b17c5e;
-  --color-accent-contrast: #ffffff; --color-chart-1: #b17c5e; --color-chart-2: #c9a27a;
-  --color-chart-3: #8a9a6f; --color-chart-4: #9a8fb0; --color-chart-5: #d0b25e; --color-chart-6: #6f9a9a;
+  --color-bg: #efe7dc;
+  --color-surface: #faf5ee;
+  --color-surface-2: #f2e9dc;
+  --color-text: #3a3128;
+  --color-text-muted: #8a8072;
+  --color-border: #e6dac9;
+  --color-hairline: rgba(58, 49, 40, 0.07);
+
+  --color-accent: #b0724f;
+  --color-accent-2: #7f8a5a;
+  --color-accent-soft: rgba(176, 114, 79, 0.12);
+  --color-accent-contrast: #fdf8f2;
+
+  --shadow-color: 58, 42, 28;
+  --mesh-1: rgba(190, 130, 92, 0.28);
+  --mesh-2: rgba(150, 162, 108, 0.22);
+  --mesh-3: rgba(170, 150, 176, 0.14);
+
+  --color-chart-1: #b0724f;
+  --color-chart-2: #d0a074;
+  --color-chart-3: #8a9a6f;
+  --color-chart-4: #9a8fb0;
+  --color-chart-5: #d9b45f;
+  --color-chart-6: #6f9a9a;
 }
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="earth"] {
+    --color-bg: #201812;
+    --color-surface: #2a2119;
+    --color-surface-2: #322820;
+    --color-text: #ece2d6;
+    --color-text-muted: #a3937f;
+    --color-border: #3d3125;
+    --color-hairline: rgba(255, 255, 255, 0.06);
+    --color-accent: #cb8b64;
+    --color-accent-2: #9aa571;
+    --color-accent-soft: rgba(203, 139, 100, 0.16);
+    --color-accent-contrast: #17110b;
+    --shadow-color: 0, 0, 0;
+    --mesh-1: rgba(180, 116, 78, 0.20);
+    --mesh-2: rgba(140, 152, 98, 0.16);
+    --mesh-3: rgba(160, 140, 168, 0.10);
+  }
+}
+
+/* -------- Lavender & Ash -------- */
 :root[data-palette="lavender"] {
-  --color-bg: #f1eef4; --color-surface: #faf8fb; --color-text: #3c3742;
-  --color-text-muted: #857f8c; --color-border: #e2dce6; --color-accent: #9a8fb0;
-  --color-accent-contrast: #ffffff; --color-chart-1: #9a8fb0; --color-chart-2: #bcb2cb;
-  --color-chart-3: #c9a27a; --color-chart-4: #7a9471; --color-chart-5: #6f9a9a; --color-chart-6: #d0b25e;
+  --color-bg: #ece8f0;
+  --color-surface: #f9f7fb;
+  --color-surface-2: #f0ecf5;
+  --color-text: #342f3d;
+  --color-text-muted: #837c8f;
+  --color-border: #e1dae8;
+  --color-hairline: rgba(52, 47, 61, 0.07);
+
+  --color-accent: #8a7fa8;
+  --color-accent-2: #c79a54;
+  --color-accent-soft: rgba(138, 127, 168, 0.12);
+  --color-accent-contrast: #fcfbfe;
+
+  --shadow-color: 46, 38, 58;
+  --mesh-1: rgba(158, 140, 190, 0.28);
+  --mesh-2: rgba(210, 170, 100, 0.18);
+  --mesh-3: rgba(140, 168, 168, 0.16);
+
+  --color-chart-1: #8a7fa8;
+  --color-chart-2: #b8adcb;
+  --color-chart-3: #c79a54;
+  --color-chart-4: #7f9a86;
+  --color-chart-5: #6f9a9a;
+  --color-chart-6: #d9b45f;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="lavender"] {
+    --color-bg: #1a1720;
+    --color-surface: #231f2b;
+    --color-surface-2: #2b2634;
+    --color-text: #e9e5f0;
+    --color-text-muted: #9a92a8;
+    --color-border: #362f42;
+    --color-hairline: rgba(255, 255, 255, 0.06);
+    --color-accent: #a99cc7;
+    --color-accent-2: #dcb762;
+    --color-accent-soft: rgba(169, 156, 199, 0.16);
+    --color-accent-contrast: #14101a;
+    --shadow-color: 0, 0, 0;
+    --mesh-1: rgba(138, 120, 170, 0.20);
+    --mesh-2: rgba(190, 154, 90, 0.14);
+    --mesh-3: rgba(120, 148, 148, 0.12);
+  }
 }

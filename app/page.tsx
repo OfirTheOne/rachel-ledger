@@ -12,6 +12,15 @@ type Kpis = {
   byDayOfWeek: { day: number; total: number }[];
 };
 
+function SectionTitle({ eyebrow, title }: { eyebrow: string; title: string }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div className="eyebrow">{eyebrow}</div>
+      <h2 style={{ fontSize: 21, marginTop: 4 }}>{title}</h2>
+    </div>
+  );
+}
+
 export default function Dashboard() {
   const [range, setRange] = useState<"week" | "month">("month");
   const [kpis, setKpis] = useState<Kpis | null>(null);
@@ -20,6 +29,7 @@ export default function Dashboard() {
   const [aiError, setAiError] = useState(false);
 
   useEffect(() => {
+    setKpis(null);
     getJSON<Kpis>(`/api/kpis?range=${range}`).then(setKpis);
   }, [range]);
 
@@ -35,67 +45,258 @@ export default function Dashboard() {
     finally { setAnalyzing(false); }
   }
 
-  const tabBtn = (active: boolean) => ({
-    flex: 1, padding: "8px", borderRadius: 10, border: "1px solid var(--color-border)",
-    background: active ? "var(--color-accent)" : "transparent",
-    color: active ? "var(--color-accent-contrast)" : "var(--color-text-muted)",
-  }) as const;
+  const periodLabel = range === "week" ? "This week" : "This month";
+  const maxShop = kpis?.byShop[0]?.total ?? 0;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-      <div style={{ display: "flex", gap: 8 }}>
-        <button style={tabBtn(range === "week")} onClick={() => setRange("week")}>This week</button>
-        <button style={tabBtn(range === "month")} onClick={() => setRange("month")}>This month</button>
+    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      {/* Range segmented control */}
+      <div
+        className="rise"
+        style={{
+          display: "flex",
+          gap: 4,
+          padding: 5,
+          borderRadius: 999,
+          background: "var(--color-surface)",
+          border: "1px solid var(--color-border)",
+          boxShadow: "var(--shadow-sm)",
+          animationDelay: "0.08s",
+        }}
+      >
+        {(["week", "month"] as const).map((r) => {
+          const active = range === r;
+          return (
+            <button
+              key={r}
+              onClick={() => setRange(r)}
+              style={{
+                flex: 1,
+                cursor: "pointer",
+                padding: "9px",
+                borderRadius: 999,
+                border: 0,
+                fontSize: 14,
+                fontWeight: active ? 600 : 500,
+                color: active ? "var(--color-accent-contrast)" : "var(--color-text-muted)",
+                background: active
+                  ? "linear-gradient(145deg, var(--color-accent), var(--color-accent-2))"
+                  : "transparent",
+                transition: "color 0.2s ease, background 0.2s ease",
+              }}
+            >
+              {r === "week" ? "This week" : "This month"}
+            </button>
+          );
+        })}
       </div>
 
-      {!kpis ? <Card>Loading…</Card> : (
+      {!kpis ? (
         <>
-          <Card>
-            <div style={{ color: "var(--color-text-muted)", fontSize: 13 }}>Total spend</div>
-            <div style={{ fontSize: 32, fontWeight: 700, color: "var(--color-text)" }}>{formatMoney(kpis.total)}</div>
-            <div style={{ color: "var(--color-text-muted)", fontSize: 13 }}>{kpis.count} expenses</div>
+          <div className="skeleton" style={{ height: 150 }} />
+          <div className="skeleton" style={{ height: 300, animationDelay: "0.1s" }} />
+        </>
+      ) : (
+        <>
+          {/* Hero total */}
+          <Card variant="accent" delay={0} style={{ padding: 24, overflow: "hidden" }}>
+            <div
+              className="eyebrow"
+              style={{ color: "var(--color-accent-contrast)", opacity: 0.8 }}
+            >
+              Total spent · {periodLabel}
+            </div>
+            <div
+              className="mono"
+              style={{
+                fontSize: "clamp(40px, 12vw, 54px)",
+                fontWeight: 600,
+                lineHeight: 1.02,
+                marginTop: 10,
+                letterSpacing: "-0.03em",
+              }}
+            >
+              {formatMoney(kpis.total)}
+            </div>
+            <div
+              style={{
+                marginTop: 8,
+                fontSize: 14,
+                color: "var(--color-accent-contrast)",
+                opacity: 0.85,
+              }}
+            >
+              {kpis.count} {kpis.count === 1 ? "expense" : "expenses"} recorded
+            </div>
           </Card>
 
-          <Card>
-            <h2 style={{ fontSize: 15, color: "var(--color-text)", marginBottom: 8 }}>By category</h2>
-            {kpis.byCategory.length ? <CategoryChart data={kpis.byCategory} /> : <p style={{ color: "var(--color-text-muted)" }}>No data</p>}
+          {/* By category donut */}
+          <Card delay={1}>
+            <SectionTitle eyebrow="Where it went" title="By category" />
+            {kpis.byCategory.length ? (
+              <CategoryChart data={kpis.byCategory} />
+            ) : (
+              <Empty />
+            )}
           </Card>
 
-          <Card>
-            <h2 style={{ fontSize: 15, color: "var(--color-text)", marginBottom: 8 }}>By day of week</h2>
+          {/* By day of week */}
+          <Card delay={2}>
+            <SectionTitle eyebrow="Rhythm" title="By day of week" />
             <DayOfWeekChart data={kpis.byDayOfWeek} />
           </Card>
 
-          <Card>
-            <h2 style={{ fontSize: 15, color: "var(--color-text)", marginBottom: 8 }}>Top shops</h2>
-            {kpis.byShop.slice(0, 5).map((s) => (
-              <div key={s.shop} style={{ display: "flex", justifyContent: "space-between", padding: "4px 0", color: "var(--color-text)" }}>
-                <span>{s.shop}</span><span>{formatMoney(s.total)}</span>
+          {/* Top shops with mini bars */}
+          <Card delay={3}>
+            <SectionTitle eyebrow="Merchants" title="Top shops" />
+            {kpis.byShop.length ? (
+              <div style={{ display: "grid", gap: 14 }}>
+                {kpis.byShop.slice(0, 5).map((s, i) => (
+                  <div key={s.shop}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "baseline",
+                        marginBottom: 6,
+                      }}
+                    >
+                      <span style={{ color: "var(--color-text)", fontWeight: 500 }}>
+                        <span
+                          className="mono"
+                          style={{ color: "var(--color-text-muted)", fontSize: 12, marginRight: 8 }}
+                        >
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        {s.shop}
+                      </span>
+                      <span className="mono" style={{ color: "var(--color-text)", fontWeight: 500 }}>
+                        {formatMoney(s.total)}
+                      </span>
+                    </div>
+                    <div
+                      style={{
+                        height: 7,
+                        borderRadius: 999,
+                        background: "var(--color-surface-2)",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div
+                        style={{
+                          height: "100%",
+                          width: `${maxShop ? (s.total / maxShop) * 100 : 0}%`,
+                          borderRadius: 999,
+                          background:
+                            "linear-gradient(90deg, var(--color-accent), var(--color-accent-2))",
+                          transition: "width 0.6s cubic-bezier(0.22,0.61,0.36,1)",
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
-            ))}
-            {!kpis.byShop.length && <p style={{ color: "var(--color-text-muted)" }}>No data</p>}
+            ) : (
+              <Empty />
+            )}
           </Card>
 
-          <Card>
-            <button onClick={analyze} disabled={analyzing} style={{ width: "100%", background: "var(--color-accent)", color: "var(--color-accent-contrast)", border: 0, borderRadius: 12, padding: "12px" }}>
-              {analyzing ? "Analyzing…" : "✨ Analyze my spending"}
+          {/* AI insights */}
+          <Card delay={4}>
+            <SectionTitle eyebrow="Assistant" title="Insights" />
+            <button
+              onClick={analyze}
+              disabled={analyzing}
+              style={{
+                width: "100%",
+                cursor: analyzing ? "default" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: 10,
+                padding: "14px",
+                border: 0,
+                borderRadius: "var(--radius-sm)",
+                fontSize: 15,
+                fontWeight: 600,
+                color: "var(--color-accent-contrast)",
+                background: "linear-gradient(145deg, var(--color-accent), var(--color-accent-2))",
+                boxShadow: "var(--shadow-md)",
+                opacity: analyzing ? 0.8 : 1,
+              }}
+            >
+              <Sparkle spinning={analyzing} />
+              {analyzing ? "Reading your spending…" : "Analyze my spending"}
             </button>
-            {aiError && <p style={{ color: "var(--color-text-muted)", marginTop: 10 }}>Couldn't analyze right now — try again.</p>}
+
+            {aiError && (
+              <p style={{ color: "var(--color-text-muted)", marginTop: 12, fontSize: 14 }}>
+                Couldn&apos;t analyze right now — please try again.
+              </p>
+            )}
+
             {insights && (
-              <div style={{ marginTop: 14 }}>
-                <h3 style={{ fontSize: 14, color: "var(--color-text)" }}>Insights</h3>
-                <ul style={{ color: "var(--color-text-muted)", fontSize: 14, paddingLeft: 18 }}>
-                  {(insights.insights ?? []).map((t, i) => <li key={i}>{t}</li>)}
-                </ul>
-                <h3 style={{ fontSize: 14, color: "var(--color-text)", marginTop: 10 }}>Suggestions</h3>
-                <ul style={{ color: "var(--color-text-muted)", fontSize: 14, paddingLeft: 18 }}>
-                  {(insights.suggestions ?? []).map((t, i) => <li key={i}>{t}</li>)}
-                </ul>
+              <div style={{ marginTop: 18, display: "grid", gap: 18 }}>
+                <InsightBlock title="What stood out" items={insights.insights ?? []} accent="var(--color-accent)" />
+                <InsightBlock title="Gentle suggestions" items={insights.suggestions ?? []} accent="var(--color-accent-2)" />
               </div>
             )}
           </Card>
         </>
       )}
     </div>
+  );
+}
+
+function InsightBlock({ title, items, accent }: { title: string; items: string[]; accent: string }) {
+  if (!items.length) return null;
+  return (
+    <div>
+      <div className="eyebrow" style={{ marginBottom: 10 }}>{title}</div>
+      <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 10 }}>
+        {items.map((t, i) => (
+          <li key={i} style={{ display: "flex", gap: 12, fontSize: 14.5, lineHeight: 1.5 }}>
+            <span
+              aria-hidden
+              style={{
+                marginTop: 7,
+                width: 7,
+                height: 7,
+                borderRadius: 999,
+                flexShrink: 0,
+                background: accent,
+              }}
+            />
+            <span style={{ color: "var(--color-text)" }}>{t}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function Empty() {
+  return (
+    <p style={{ color: "var(--color-text-muted)", fontSize: 14, padding: "8px 0" }}>
+      Nothing here yet for this period.
+    </p>
+  );
+}
+
+function Sparkle({ spinning }: { spinning: boolean }) {
+  return (
+    <svg
+      width="17"
+      height="17"
+      viewBox="0 0 24 24"
+      fill="none"
+      style={spinning ? { animation: "spin 1.1s linear infinite" } : undefined}
+      aria-hidden
+    >
+      <path
+        d="M12 2l1.9 5.6a4 4 0 0 0 2.5 2.5L22 12l-5.6 1.9a4 4 0 0 0-2.5 2.5L12 22l-1.9-5.6a4 4 0 0 0-2.5-2.5L2 12l5.6-1.9a4 4 0 0 0 2.5-2.5L12 2z"
+        fill="currentColor"
+      />
+    </svg>
   );
 }

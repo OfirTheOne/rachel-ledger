@@ -1,10 +1,32 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { getJSON, del } from "@/lib/api";
 import { formatMoney } from "@/lib/format";
 import { Card } from "@/app/ui/Card";
 
-type Expense = { id: string; amountAgorot: number; date: string; shop: string; note: string | null; category: { name: string } };
+type Expense = {
+  id: string;
+  amountAgorot: number;
+  date: string;
+  shop: string;
+  note: string | null;
+  category: { name: string };
+};
+
+const CHART_VARS = [
+  "--color-chart-1", "--color-chart-2", "--color-chart-3",
+  "--color-chart-4", "--color-chart-5", "--color-chart-6",
+];
+function categoryColor(name: string) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h + name.charCodeAt(i)) % CHART_VARS.length;
+  return `var(${CHART_VARS[h]})`;
+}
+function prettyDate(iso: string) {
+  const d = new Date(`${iso.slice(0, 10)}T00:00:00`);
+  return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
+}
 
 export default function ExpensesPage() {
   const [items, setItems] = useState<Expense[]>([]);
@@ -22,23 +44,134 @@ export default function ExpensesPage() {
     setItems((xs) => xs.filter((x) => x.id !== id));
   }
 
-  if (loading) return <Card>Loading…</Card>;
-  if (items.length === 0) return <Card>No expenses yet. Add your first one.</Card>;
+  if (loading) {
+    return (
+      <div style={{ display: "grid", gap: 10 }}>
+        {[0, 1, 2, 3].map((i) => (
+          <div key={i} className="skeleton" style={{ height: 66, animationDelay: `${i * 0.08}s` }} />
+        ))}
+      </div>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <Card style={{ textAlign: "center", padding: "44px 24px" }}>
+        <div style={{ fontSize: 34, marginBottom: 10 }} aria-hidden>🪶</div>
+        <h2 style={{ fontSize: 22, marginBottom: 6 }}>An empty ledger</h2>
+        <p style={{ color: "var(--color-text-muted)", fontSize: 14.5, marginBottom: 20 }}>
+          Nothing recorded yet. Your first entry starts the story.
+        </p>
+        <Link
+          href="/add"
+          style={{
+            display: "inline-block",
+            textDecoration: "none",
+            padding: "12px 22px",
+            borderRadius: "var(--radius-sm)",
+            fontSize: 15,
+            fontWeight: 600,
+            color: "var(--color-accent-contrast)",
+            background: "linear-gradient(145deg, var(--color-accent), var(--color-accent-2))",
+            boxShadow: "var(--shadow-md)",
+          }}
+        >
+          Add an expense
+        </Link>
+      </Card>
+    );
+  }
+
+  const total = items.reduce((s, e) => s + e.amountAgorot, 0);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-      {items.map((e) => (
-        <Card key={e.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div>
-            <div style={{ color: "var(--color-text)", fontWeight: 600 }}>{e.shop}</div>
-            <div style={{ color: "var(--color-text-muted)", fontSize: 13 }}>
-              {e.category.name} · {e.date.slice(0, 10)}{e.note ? ` · ${e.note}` : ""}
+    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+      <div
+        className="rise"
+        style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: "0 4px 2px" }}
+      >
+        <div className="eyebrow">{items.length} entries</div>
+        <div className="mono" style={{ fontSize: 13, color: "var(--color-text-muted)" }}>
+          {formatMoney(total)} total
+        </div>
+      </div>
+
+      {items.map((e, i) => (
+        <Card
+          key={e.id}
+          delay={Math.min(i, 6)}
+          style={{ display: "flex", alignItems: "center", gap: 14, padding: "14px 16px" }}
+        >
+          <span
+            aria-hidden
+            title={e.category.name}
+            style={{
+              width: 40,
+              height: 40,
+              flexShrink: 0,
+              borderRadius: 12,
+              display: "grid",
+              placeItems: "center",
+              background: "var(--color-surface-2)",
+              position: "relative",
+            }}
+          >
+            <span
+              style={{
+                width: 12,
+                height: 12,
+                borderRadius: 4,
+                background: categoryColor(e.category.name),
+              }}
+            />
+          </span>
+
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <div
+              style={{
+                color: "var(--color-text)",
+                fontWeight: 600,
+                fontSize: 15.5,
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {e.shop}
+            </div>
+            <div style={{ color: "var(--color-text-muted)", fontSize: 12.5, marginTop: 2 }}>
+              {e.category.name} · {prettyDate(e.date)}
+              {e.note ? ` · ${e.note}` : ""}
             </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <span style={{ color: "var(--color-text)", fontWeight: 600 }}>{formatMoney(e.amountAgorot)}</span>
-            <button onClick={() => remove(e.id)} style={{ background: "transparent", border: 0, color: "var(--color-text-muted)", cursor: "pointer" }}>✕</button>
-          </div>
+
+          <span
+            className="mono"
+            style={{ color: "var(--color-text)", fontWeight: 600, fontSize: 15.5, whiteSpace: "nowrap" }}
+          >
+            {formatMoney(e.amountAgorot)}
+          </span>
+
+          <button
+            onClick={() => remove(e.id)}
+            aria-label={`Delete ${e.shop}`}
+            style={{
+              flexShrink: 0,
+              width: 30,
+              height: 30,
+              display: "grid",
+              placeItems: "center",
+              cursor: "pointer",
+              borderRadius: 9,
+              border: "1px solid var(--color-border)",
+              background: "transparent",
+              color: "var(--color-text-muted)",
+              fontSize: 14,
+              lineHeight: 1,
+            }}
+          >
+            ✕
+          </button>
         </Card>
       ))}
     </div>
