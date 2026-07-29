@@ -10,7 +10,12 @@ export function CategoryChart({ data }: { data: { name: string; total: number }[
       <BarChart data={data} layout="vertical" margin={{ left: 8, right: 8 }}>
         <XAxis type="number" hide />
         <YAxis type="category" dataKey="name" width={90} tick={{ fill: "var(--color-text-muted)", fontSize: 12 }} axisLine={false} tickLine={false} />
-        <Tooltip formatter={(v) => `₪${(Number(v) / 100).toFixed(2)}`} />
+        <Tooltip
+          formatter={(v) => `₪${(Number(v) / 100).toFixed(2)}`}
+          contentStyle={{ background: "var(--color-surface)", border: "1px solid var(--color-border)", borderRadius: 8, color: "var(--color-text)" }}
+          labelStyle={{ color: "var(--color-text)" }}
+          itemStyle={{ color: "var(--color-text)" }}
+        />
         <Bar dataKey="total" radius={[0, 8, 8, 0]}>
           {data.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
         </Bar>
@@ -26,7 +31,12 @@ export function DayOfWeekChart({ data }: { data: { day: number; total: number }[
       <BarChart data={shaped}>
         <XAxis dataKey="label" tick={{ fill: "var(--color-text-muted)", fontSize: 12 }} axisLine={false} tickLine={false} />
         <YAxis hide />
-        <Tooltip formatter={(v) => `₪${(Number(v) / 100).toFixed(2)}`} />
+        <Tooltip
+          formatter={(v) => `₪${(Number(v) / 100).toFixed(2)}`}
+          contentStyle={{ background: "var(--color-surface)", border: "1px solid var(--color-border)", borderRadius: 8, color: "var(--color-text)" }}
+          labelStyle={{ color: "var(--color-text)" }}
+          itemStyle={{ color: "var(--color-text)" }}
+        />
         <Bar dataKey="total" radius={[8, 8, 0, 0]} fill="var(--color-chart-1)" />
       </BarChart>
     </ResponsiveContainer>

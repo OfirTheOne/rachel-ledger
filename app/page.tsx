@@ -85,11 +85,11 @@ export default function Dashboard() {
               <div style={{ marginTop: 14 }}>
                 <h3 style={{ fontSize: 14, color: "var(--color-text)" }}>Insights</h3>
                 <ul style={{ color: "var(--color-text-muted)", fontSize: 14, paddingLeft: 18 }}>
-                  {insights.insights.map((t, i) => <li key={i}>{t}</li>)}
+                  {(insights.insights ?? []).map((t, i) => <li key={i}>{t}</li>)}
                 </ul>
                 <h3 style={{ fontSize: 14, color: "var(--color-text)", marginTop: 10 }}>Suggestions</h3>
                 <ul style={{ color: "var(--color-text-muted)", fontSize: 14, paddingLeft: 18 }}>
-                  {insights.suggestions.map((t, i) => <li key={i}>{t}</li>)}
+                  {(insights.suggestions ?? []).map((t, i) => <li key={i}>{t}</li>)}
                 </ul>
               </div>
             )}
