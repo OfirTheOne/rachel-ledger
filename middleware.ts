@@ -26,6 +26,6 @@ export async function middleware(req: NextRequest) {
 export const config = {
   // Guard everything except static assets, the app icon, and the auth routes.
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|app_icon.png|login|api/login|api/logout).*)",
+    "/((?!_next/static|_next/image|favicon.ico|app_icon.png|icon.jpg|apple-icon.jpg|login|api/login|api/logout).*)",
   ],
 };
