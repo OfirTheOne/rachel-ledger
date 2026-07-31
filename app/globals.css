@@ -122,3 +122,9 @@ input[type="date"]::-webkit-calendar-picker-indicator { opacity: 0.55; cursor: p
 @media (prefers-reduced-motion: reduce) {
   .rise, .skeleton { animation: none; opacity: 1; }
 }
+
+/* Collapse a button's text label on narrow screens, leaving just its icon,
+   so long category names get more room in the settings manager. */
+@media (max-width: 430px) {
+  .pill-collapse { display: none; }
+}

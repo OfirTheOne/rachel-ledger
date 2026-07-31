@@ -259,7 +259,7 @@ export default function SettingsPage() {
                       }}
                     />
                   ) : (
-                    <span style={{ flex: 1, color: "var(--color-text)", fontWeight: 500, fontSize: 15 }}>
+                    <span style={{ flex: 1, minWidth: 0, color: "var(--color-text)", fontWeight: 500, fontSize: 15 }}>
                       {c.name}
                       {isFallback && (
                         <span className="eyebrow" style={{ marginInlineStart: 8, fontSize: 9, opacity: 0.8 }}>
@@ -282,10 +282,10 @@ export default function SettingsPage() {
                       <PillBtn onClick={() => setConfirmingId(null)}>{t("settings.no")}</PillBtn>
                     </div>
                   ) : (
-                    <div style={{ display: "flex", gap: 6 }}>
-                      <PillBtn onClick={() => startEdit(c)}>{t("settings.rename")}</PillBtn>
+                    <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
+                      <PillBtn onClick={() => startEdit(c)} icon={<PencilIcon />} collapse>{t("settings.rename")}</PillBtn>
                       {!isFallback && (
-                        <PillBtn onClick={() => { setEditingId(null); setConfirmingId(c.id); setError(null); }} kind="ghostDanger">
+                        <PillBtn onClick={() => { setEditingId(null); setConfirmingId(c.id); setError(null); }} kind="ghostDanger" icon={<TrashIcon />} collapse>
                           {t("settings.delete")}
                         </PillBtn>
                       )}
@@ -326,12 +326,15 @@ export default function SettingsPage() {
 }
 
 function PillBtn({
-  children, onClick, disabled, kind = "plain",
+  children, onClick, disabled, kind = "plain", icon, collapse,
 }: {
-  children: React.ReactNode;
+  children: string;
   onClick: () => void;
   disabled?: boolean;
   kind?: "plain" | "accent" | "danger" | "ghostDanger";
+  icon?: React.ReactNode;
+  // When true, the text label is hidden on narrow screens (icon-only).
+  collapse?: boolean;
 }) {
   const styles: Record<string, React.CSSProperties> = {
     plain: { color: "var(--color-text-muted)", background: "transparent", border: "1px solid var(--color-border)" },
@@ -343,8 +346,13 @@ function PillBtn({
     <button
       onClick={onClick}
       disabled={disabled}
+      aria-label={children}
+      title={children}
       style={{
         cursor: disabled ? "default" : "pointer",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 5,
         padding: "6px 12px",
         borderRadius: 999,
         fontSize: 12.5,
@@ -353,7 +361,24 @@ function PillBtn({
         ...styles[kind],
       }}
     >
-      {children}
+      {icon}
+      <span className={collapse ? "pill-collapse" : undefined}>{children}</span>
     </button>
+  );
+}
+
+function PencilIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M4 20h4L18.5 9.5a2.12 2.12 0 0 0-3-3L5 17v3Z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round" />
+      <path d="M13.5 6.5l4 4" stroke="currentColor" strokeWidth="1.7" />
+    </svg>
+  );
+}
+function TrashIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0-1 13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
   );
 }

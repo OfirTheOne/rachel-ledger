@@ -104,7 +104,7 @@ export default function AddPage() {
           />
         </Field>
 
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 12 }}>
           <Field label={t("add.date")}>
             <input style={inputStyle} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
           </Field>
@@ -254,6 +254,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 const inputStyle: React.CSSProperties = {
   width: "100%",
+  minWidth: 0,
   padding: "12px 14px",
   borderRadius: 13,
   border: "1px solid var(--color-border)",
