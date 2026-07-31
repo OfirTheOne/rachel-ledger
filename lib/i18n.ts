@@ -88,6 +88,16 @@ const en: Dict = {
   "settings.yes": "Yes",
   "settings.no": "No",
   "settings.fallback": "fallback",
+  "settings.account": "Account",
+  "settings.logout": "Log out",
+
+  "login.title": "Welcome back",
+  "login.subtitle": "Enter your password to open the ledger.",
+  "login.password": "Password",
+  "login.passwordPlaceholder": "Your password",
+  "login.submit": "Unlock",
+  "login.submitting": "Unlocking…",
+  "login.error": "Wrong password — try again.",
 
   "msg.added": "Added “{name}”.",
   "msg.renamed": "Renamed.",
@@ -179,6 +189,16 @@ const he: Dict = {
   "settings.yes": "כן",
   "settings.no": "לא",
   "settings.fallback": "ברירת מחדל",
+  "settings.account": "חשבון",
+  "settings.logout": "התנתקות",
+
+  "login.title": "ברוכים השבים",
+  "login.subtitle": "הזינו את הסיסמה כדי לפתוח את הפנקס.",
+  "login.password": "סיסמה",
+  "login.passwordPlaceholder": "הסיסמה שלך",
+  "login.submit": "כניסה",
+  "login.submitting": "נכנס…",
+  "login.error": "סיסמה שגויה — נסו שוב.",
 
   "msg.added": "נוספה “{name}”.",
   "msg.renamed": "השם שונה.",

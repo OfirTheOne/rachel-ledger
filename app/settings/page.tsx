@@ -94,6 +94,11 @@ export default function SettingsPage() {
     } finally { setBusy(false); }
   }
 
+  async function logout() {
+    try { await postJSON("/api/logout", {}); } catch { /* ignore */ }
+    window.location.href = "/login";
+  }
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
       <div className="rise" style={{ padding: "0 4px" }}>
@@ -291,6 +296,30 @@ export default function SettingsPage() {
             })}
           </ul>
         )}
+      </Card>
+
+      {/* Account */}
+      <Card delay={2} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <div>
+          <div className="eyebrow" style={{ marginBottom: 4 }}>{t("settings.account")}</div>
+          <h2 style={{ fontSize: 18 }}>{t("settings.logout")}</h2>
+        </div>
+        <button
+          onClick={logout}
+          style={{
+            cursor: "pointer",
+            padding: "10px 18px",
+            borderRadius: 999,
+            fontSize: 14,
+            fontWeight: 600,
+            color: "var(--color-text)",
+            background: "var(--color-surface-2)",
+            border: "1px solid var(--color-border)",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {t("settings.logout")}
+        </button>
       </Card>
     </div>
   );
