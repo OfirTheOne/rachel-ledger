@@ -2,18 +2,21 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { getJSON, postJSON } from "@/lib/api";
-import { agorotFromInput } from "@/lib/format";
+import { agorotFromInput, formatMoney } from "@/lib/format";
 import { Card } from "@/app/ui/Card";
 import { useT } from "@/app/ui/LanguageProvider";
 
 type Category = { id: string; name: string };
 const METHOD_VALUES = ["Cash", "Credit", "Debit", "BankTransfer", "Other"];
+type Mode = "oneTime" | "installments";
 
 export default function AddPage() {
   const { t } = useT();
   const router = useRouter();
+  const [mode, setMode] = useState<Mode>("oneTime");
   const [categories, setCategories] = useState<Category[]>([]);
   const [amount, setAmount] = useState("");
+  const [count, setCount] = useState("");
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [shop, setShop] = useState("");
   const [note, setNote] = useState("");
@@ -40,6 +43,7 @@ export default function AddPage() {
   }
 
   async function save() {
+    if (mode === "installments") return saveInstallments();
     const amountAgorot = agorotFromInput(amount);
     if (!Number.isInteger(amountAgorot) || amountAgorot <= 0 || !shop || !categoryId) return;
     setSaving(true);
@@ -49,10 +53,74 @@ export default function AddPage() {
     } finally { setSaving(false); }
   }
 
-  const canSave = amount !== "" && shop !== "" && categoryId !== "";
+  async function saveInstallments() {
+    const totalAgorot = agorotFromInput(amount);
+    const n = parseInt(count, 10);
+    if (!Number.isInteger(totalAgorot) || totalAgorot <= 0 || !shop || !categoryId || !Number.isInteger(n) || n < 2) return;
+    setSaving(true);
+    try {
+      await postJSON("/api/installments", { totalAgorot, count: n, startDate: date, categoryId, shop, note: note || undefined, paymentMethod });
+      router.push("/expenses");
+    } finally { setSaving(false); }
+  }
+
+  const nPayments = parseInt(count, 10);
+  const totalA = agorotFromInput(amount);
+  const perMonth =
+    mode === "installments" && Number.isInteger(totalA) && totalA > 0 && Number.isInteger(nPayments) && nPayments >= 2
+      ? formatMoney(Math.floor(totalA / nPayments))
+      : null;
+  const canSave =
+    mode === "installments"
+      ? amount !== "" && shop !== "" && categoryId !== "" && Number.isInteger(nPayments) && nPayments >= 2
+      : amount !== "" && shop !== "" && categoryId !== "";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      {/* Type selector */}
+      <div
+        className="rise"
+        style={{
+          display: "flex",
+          gap: 4,
+          padding: 5,
+          borderRadius: 999,
+          background: "var(--color-surface)",
+          border: "1px solid var(--color-border)",
+          boxShadow: "var(--shadow-sm)",
+        }}
+      >
+        {([
+          ["oneTime", () => setMode("oneTime")],
+          ["installments", () => setMode("installments")],
+          ["recurring", () => router.push("/recurring")],
+        ] as const).map(([key, onClick]) => {
+          const active = mode === key;
+          return (
+            <button
+              key={key}
+              onClick={onClick}
+              style={{
+                flex: 1,
+                cursor: "pointer",
+                padding: "9px 4px",
+                borderRadius: 999,
+                border: 0,
+                fontSize: 13.5,
+                fontWeight: active ? 600 : 500,
+                color: active ? "var(--color-accent-contrast)" : "var(--color-text-muted)",
+                background: active
+                  ? "linear-gradient(145deg, var(--color-accent), var(--color-accent-2))"
+                  : "transparent",
+                transition: "color 0.2s ease, background 0.2s ease",
+              }}
+            >
+              {t(`add.type.${key}`)}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Amount hero */}
       <Card variant="accent" delay={0} style={{ padding: "22px 24px" }}>
         <label
@@ -60,7 +128,7 @@ export default function AddPage() {
           htmlFor="amount"
           style={{ color: "var(--color-accent-contrast)", opacity: 0.8, display: "block" }}
         >
-          {t("add.amount")}
+          {mode === "installments" ? t("add.total") : t("add.amount")}
         </label>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
           <span
@@ -117,6 +185,26 @@ export default function AddPage() {
             />
           </Field>
         </div>
+
+        {mode === "installments" && (
+          <Field label={t("add.numPayments")}>
+            <input
+              style={inputStyle}
+              type="number"
+              inputMode="numeric"
+              min={2}
+              max={120}
+              placeholder="10"
+              value={count}
+              onChange={(e) => setCount(e.target.value)}
+            />
+            {perMonth && (
+              <div style={{ color: "var(--color-text-muted)", fontSize: 13, marginTop: 8 }}>
+                {t("add.perMonth", { amount: perMonth, count: nPayments })}
+              </div>
+            )}
+          </Field>
+        )}
 
         {/* Category chips */}
         <div>
@@ -237,7 +325,7 @@ export default function AddPage() {
           transition: "opacity 0.2s ease",
         }}
       >
-        {saving ? t("add.saving") : t("add.save")}
+        {saving ? t("add.saving") : mode === "installments" ? t("add.saveInstallments") : t("add.save")}
       </button>
     </div>
   );

@@ -14,6 +14,9 @@ type Expense = {
   shop: string;
   note: string | null;
   category: { name: string };
+  installmentSeq: number | null;
+  installmentCount: number | null;
+  recurringPaymentId: string | null;
 };
 
 const CHART_VARS = [
@@ -33,6 +36,16 @@ function prettyDate(iso: string, locale: Locale) {
     day: "numeric",
   });
 }
+const badgeStyle: React.CSSProperties = {
+  flexShrink: 0,
+  fontSize: 10.5,
+  fontWeight: 600,
+  lineHeight: 1,
+  padding: "3px 6px",
+  borderRadius: 6,
+  color: "var(--color-accent)",
+  background: "var(--color-accent-soft)",
+};
 
 export default function ExpensesPage() {
   const { t, locale } = useT();
@@ -136,17 +149,24 @@ export default function ExpensesPage() {
           </span>
 
           <div style={{ minWidth: 0, flex: 1 }}>
-            <div
-              style={{
-                color: "var(--color-text)",
-                fontWeight: 600,
-                fontSize: 15.5,
-                whiteSpace: "nowrap",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-              }}
-            >
-              {e.shop}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, minWidth: 0 }}>
+              <span
+                style={{
+                  color: "var(--color-text)",
+                  fontWeight: 600,
+                  fontSize: 15.5,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {e.shop}
+              </span>
+              {e.installmentSeq && e.installmentCount ? (
+                <span className="mono" style={badgeStyle}>{e.installmentSeq}/{e.installmentCount}</span>
+              ) : e.recurringPaymentId ? (
+                <span style={badgeStyle} title="recurring">↻</span>
+              ) : null}
             </div>
             <div style={{ color: "var(--color-text-muted)", fontSize: 12.5, marginTop: 2 }}>
               {e.category.name} · {prettyDate(e.date, locale)}

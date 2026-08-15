@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { getJSON, postJSON } from "@/lib/api";
 import { formatMoney } from "@/lib/format";
 import { Card } from "@/app/ui/Card";
@@ -29,11 +30,20 @@ export default function Dashboard() {
   const [insights, setInsights] = useState<{ insights: string[]; suggestions: string[] } | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [aiError, setAiError] = useState(false);
+  const [dueCount, setDueCount] = useState(0);
 
   useEffect(() => {
     setKpis(null);
     getJSON<Kpis>(`/api/kpis?range=${range}`).then(setKpis);
   }, [range]);
+
+  useEffect(() => {
+    (async () => {
+      await postJSON("/api/recurring/run", {}).catch(() => {});
+      const occ = await getJSON<unknown[]>("/api/recurring/occurrences").catch(() => []);
+      setDueCount(occ.length);
+    })();
+  }, []);
 
   async function analyze() {
     if (!kpis) return;
@@ -53,6 +63,30 @@ export default function Dashboard() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      {dueCount > 0 && (
+        <Link
+          href="/recurring"
+          className="rise"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 10,
+            padding: "12px 16px",
+            borderRadius: "var(--radius-sm)",
+            textDecoration: "none",
+            color: "var(--color-accent)",
+            background: "var(--color-accent-soft)",
+            border: "1px solid transparent",
+            fontSize: 14,
+            fontWeight: 600,
+          }}
+        >
+          <span>↻ {t("dash.due", { count: dueCount })}</span>
+          <span style={{ opacity: 0.8 }}>{t("dash.dueReview")} ›</span>
+        </Link>
+      )}
+
       {/* Range segmented control */}
       <div
         className="rise"

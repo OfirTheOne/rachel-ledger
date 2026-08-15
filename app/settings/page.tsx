@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { getJSON, postJSON, patchJSON, delJSON } from "@/lib/api";
 import { Card } from "@/app/ui/Card";
 import { useT } from "@/app/ui/LanguageProvider";
@@ -298,8 +299,19 @@ export default function SettingsPage() {
         )}
       </Card>
 
+      {/* Recurring & installments link */}
+      <Link href="/recurring" style={{ textDecoration: "none" }}>
+        <Card delay={2} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 4 }}>{t("recurring.eyebrow")}</div>
+            <h2 style={{ fontSize: 18 }}>{t("settings.recurring")}</h2>
+          </div>
+          <span style={{ color: "var(--color-text-muted)", fontSize: 20 }} aria-hidden>›</span>
+        </Card>
+      </Link>
+
       {/* Account */}
-      <Card delay={2} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <Card delay={3} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
         <div>
           <div className="eyebrow" style={{ marginBottom: 4 }}>{t("settings.account")}</div>
           <h2 style={{ fontSize: 18 }}>{t("settings.logout")}</h2>

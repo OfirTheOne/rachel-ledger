@@ -18,13 +18,21 @@ enum PaymentMethod {
   Other
 }
 
+enum OccurrenceStatus {
+  Pending
+  Confirmed
+  Skipped
+}
+
 model Category {
-  id        String    @id @default(cuid())
-  name      String    @unique
-  isDefault Boolean   @default(false)
-  sortOrder Int       @default(0)
-  archived  Boolean   @default(false)
-  expenses  Expense[]
+  id               String             @id @default(cuid())
+  name             String             @unique
+  isDefault        Boolean            @default(false)
+  sortOrder        Int                @default(0)
+  archived         Boolean            @default(false)
+  expenses         Expense[]
+  installmentPlans InstallmentPlan[]
+  recurringPayments RecurringPayment[]
 }
 
 model Expense {
@@ -39,6 +47,59 @@ model Expense {
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
+  // Installment link (a purchase split across N monthly rows).
+  installmentPlanId String?
+  installmentPlan   InstallmentPlan? @relation(fields: [installmentPlanId], references: [id], onDelete: Cascade)
+  installmentSeq    Int?
+  installmentCount  Int?
+
+  // Recurring link (a confirmed occurrence of a recurring template).
+  recurringPaymentId String?
+  recurringPayment   RecurringPayment? @relation(fields: [recurringPaymentId], references: [id], onDelete: SetNull)
+
   @@index([date])
   @@index([categoryId])
+  @@index([installmentPlanId])
+  @@index([recurringPaymentId])
+}
+
+model InstallmentPlan {
+  id                String        @id @default(cuid())
+  totalAmountAgorot Int
+  count             Int
+  categoryId        String
+  category          Category      @relation(fields: [categoryId], references: [id])
+  shop              String
+  note              String?
+  paymentMethod     PaymentMethod @default(Other)
+  startDate         DateTime      @db.Date
+  createdAt         DateTime      @default(now())
+  expenses          Expense[]
+}
+
+model RecurringPayment {
+  id            String                @id @default(cuid())
+  name          String
+  categoryId    String
+  category      Category              @relation(fields: [categoryId], references: [id])
+  paymentMethod PaymentMethod         @default(Other)
+  amountAgorot  Int? // null => variable / unknown amount
+  dayOfMonth    Int?
+  active        Boolean               @default(true)
+  startMonth    DateTime              @db.Date
+  createdAt     DateTime              @default(now())
+  occurrences   RecurringOccurrence[]
+  expenses      Expense[]
+}
+
+model RecurringOccurrence {
+  id                 String           @id @default(cuid())
+  recurringPaymentId String
+  recurringPayment   RecurringPayment @relation(fields: [recurringPaymentId], references: [id], onDelete: Cascade)
+  periodMonth        DateTime         @db.Date
+  status             OccurrenceStatus @default(Pending)
+  expenseId          String?
+  createdAt          DateTime         @default(now())
+
+  @@unique([recurringPaymentId, periodMonth])
 }
