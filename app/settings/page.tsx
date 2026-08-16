@@ -4,7 +4,9 @@ import Link from "next/link";
 import { getJSON, postJSON, patchJSON, delJSON } from "@/lib/api";
 import { Card } from "@/app/ui/Card";
 import { useT } from "@/app/ui/LanguageProvider";
+import { usePalette } from "@/app/ui/PaletteProvider";
 import { LOCALES, type Locale } from "@/lib/i18n";
+import { PALETTES, type Palette } from "@/lib/palette";
 
 type Category = { id: string; name: string };
 const FALLBACK = "Other";
@@ -154,7 +156,10 @@ export default function SettingsPage() {
         </div>
       </Card>
 
-      <Card delay={1} style={{ display: "grid", gap: 18 }}>
+      {/* Colour theme */}
+      <ThemeCard />
+
+      <Card delay={2} style={{ display: "grid", gap: 18 }}>
         <div>
           <div className="eyebrow" style={{ marginBottom: 4 }}>{t("settings.manage")}</div>
           <h2 style={{ fontSize: 20 }}>{t("settings.categories")}</h2>
@@ -301,7 +306,7 @@ export default function SettingsPage() {
 
       {/* Recurring & installments link */}
       <Link href="/recurring" style={{ textDecoration: "none" }}>
-        <Card delay={2} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <Card delay={3} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div>
             <div className="eyebrow" style={{ marginBottom: 4 }}>{t("recurring.eyebrow")}</div>
             <h2 style={{ fontSize: 18 }}>{t("settings.recurring")}</h2>
@@ -311,7 +316,7 @@ export default function SettingsPage() {
       </Link>
 
       {/* Account */}
-      <Card delay={3} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <Card delay={4} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
         <div>
           <div className="eyebrow" style={{ marginBottom: 4 }}>{t("settings.account")}</div>
           <h2 style={{ fontSize: 18 }}>{t("settings.logout")}</h2>
@@ -334,6 +339,97 @@ export default function SettingsPage() {
         </button>
       </Card>
     </div>
+  );
+}
+
+// Representative light-mode colours per palette (mirrors app/theme.css) for the
+// swatch previews — accent gradient over the palette's background tint.
+const PALETTE_PREVIEW: Record<Palette, { bg: string; a: string; b: string }> = {
+  sage: { bg: "#efeae0", a: "#6f8f5c", b: "#c79a54" },
+  blue: { bg: "#e9edf1", a: "#5a7f9e", b: "#d98c6a" },
+  earth: { bg: "#efe7dc", a: "#b0724f", b: "#7f8a5a" },
+  lavender: { bg: "#ece8f0", a: "#8a7fa8", b: "#c79a54" },
+  pink: { bg: "#f5e8ee", a: "#cf7093", b: "#b06a9e" },
+};
+
+function ThemeCard() {
+  const { t } = useT();
+  const { palette, setPalette } = usePalette();
+  // Local state so the active ring updates instantly (no reload).
+  const [selected, setSelected] = useState<Palette>(palette);
+
+  function choose(p: Palette) {
+    setSelected(p);
+    setPalette(p);
+  }
+
+  return (
+    <Card delay={1} style={{ display: "grid", gap: 16 }}>
+      <div>
+        <div className="eyebrow" style={{ marginBottom: 4 }}>{t("settings.displayEyebrow")}</div>
+        <h2 style={{ fontSize: 20 }}>{t("settings.theme")}</h2>
+        <p style={{ color: "var(--color-text-muted)", fontSize: 13.5, marginTop: 6, lineHeight: 1.5 }}>
+          {t("settings.themeDesc")}
+        </p>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12 }}>
+        {PALETTES.map((p) => {
+          const c = PALETTE_PREVIEW[p];
+          const active = selected === p;
+          return (
+            <button
+              key={p}
+              type="button"
+              onClick={() => choose(p)}
+              aria-pressed={active}
+              aria-label={t(`palette.${p}`)}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 7,
+                cursor: "pointer",
+                border: 0,
+                background: "transparent",
+                padding: 0,
+              }}
+            >
+              <span
+                style={{
+                  width: 52,
+                  height: 52,
+                  borderRadius: 16,
+                  background: c.bg,
+                  display: "grid",
+                  placeItems: "center",
+                  boxShadow: active ? "0 0 0 2px var(--color-accent)" : "inset 0 0 0 1px var(--color-border)",
+                  transition: "box-shadow 0.18s ease",
+                }}
+              >
+                <span
+                  style={{
+                    width: 26,
+                    height: 26,
+                    borderRadius: 999,
+                    background: `linear-gradient(145deg, ${c.a}, ${c.b})`,
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.18)",
+                  }}
+                />
+              </span>
+              <span
+                style={{
+                  fontSize: 11.5,
+                  fontWeight: active ? 600 : 500,
+                  color: active ? "var(--color-text)" : "var(--color-text-muted)",
+                }}
+              >
+                {t(`palette.${p}`)}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </Card>
   );
 }
 

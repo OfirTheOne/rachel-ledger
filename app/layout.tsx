@@ -3,8 +3,10 @@ import { cookies } from "next/headers";
 import { Fraunces, Hanken_Grotesk, Spline_Sans_Mono } from "next/font/google";
 import "./globals.css";
 import { LanguageProvider } from "@/app/ui/LanguageProvider";
+import { PaletteProvider } from "@/app/ui/PaletteProvider";
 import { AppChrome } from "@/app/ui/AppChrome";
 import { dir, normalizeLocale } from "@/lib/i18n";
+import { normalizePalette, paletteAttr } from "@/lib/palette";
 
 const display = Fraunces({
   subsets: ["latin"],
@@ -38,27 +40,31 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const store = await cookies();
   const locale = normalizeLocale(store.get("lang")?.value);
+  const palette = normalizePalette(store.get("palette")?.value);
 
   return (
     <html
       lang={locale}
       dir={dir(locale)}
+      data-palette={paletteAttr(palette)}
       className={`${display.variable} ${sans.variable} ${mono.variable}`}
     >
       <body>
         <LanguageProvider locale={locale}>
-          <div
-            style={{
-              position: "relative",
-              zIndex: 1,
-              maxWidth: 560,
-              margin: "0 auto",
-              padding: "clamp(20px, 5vw, 40px) 18px 72px",
-            }}
-          >
-            <AppChrome />
-            {children}
-          </div>
+          <PaletteProvider palette={palette}>
+            <div
+              style={{
+                position: "relative",
+                zIndex: 1,
+                maxWidth: 560,
+                margin: "0 auto",
+                padding: "clamp(20px, 5vw, 40px) 18px 72px",
+              }}
+            >
+              <AppChrome />
+              {children}
+            </div>
+          </PaletteProvider>
         </LanguageProvider>
       </body>
     </html>
