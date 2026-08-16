@@ -52,13 +52,19 @@ export default function RecurringPage() {
     });
   }, []);
 
+  // Generate any due occurrences, then reload — used on mount and after a new
+  // template is created so its first pending occurrence shows up immediately.
+  const runAndLoad = useCallback(async () => {
+    await postJSON("/api/recurring/run", {}).catch(() => {});
+    await load();
+  }, [load]);
+
   useEffect(() => {
     (async () => {
-      await postJSON("/api/recurring/run", {}).catch(() => {});
-      await load();
+      await runAndLoad();
       getJSON<Category[]>("/api/categories").then(setCategories);
     })();
-  }, [load]);
+  }, [runAndLoad]);
 
   function monthLabel(iso: string) {
     return new Date(`${iso.slice(0, 10)}T00:00:00`).toLocaleDateString(
@@ -72,8 +78,9 @@ export default function RecurringPage() {
     if (!Number.isInteger(amountAgorot) || amountAgorot <= 0 || busy) return;
     setBusy(true);
     try {
-      const day = Math.min(o.recurringPayment.dayOfMonth ?? 1, 28);
-      const date = `${o.periodMonth.slice(0, 7)}-${String(day).padStart(2, "0")}`;
+      // Date the expense at the moment of confirmation, not the template's day.
+      const now = new Date();
+      const date = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
       await postJSON(`/api/recurring/occurrences/${o.id}/confirm`, { amountAgorot, date });
       await load();
     } finally { setBusy(false); }
@@ -182,7 +189,7 @@ export default function RecurringPage() {
             ))}
           </div>
         )}
-        <NewTemplateForm categories={categories} onCreated={load} />
+        <NewTemplateForm categories={categories} onCreated={runAndLoad} />
       </Card>
 
       {/* Installment plans */}
