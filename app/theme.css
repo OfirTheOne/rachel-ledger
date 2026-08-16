@@ -5,8 +5,8 @@
    a tinted shadow color, a 3-color background mesh, and 6 chart hues.
    ========================================================================== */
 
-/* -------- Default palette: Sage & Sand (light) -------- */
-:root {
+/* -------- Sage & Sand -------- */
+:root[data-palette="sage"] {
   --color-bg: #efeae0;
   --color-surface: #fbf8f2;
   --color-surface-2: #f4efe4;
@@ -33,7 +33,7 @@
   --color-chart-6: #6f9a9a;
 }
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root[data-palette="sage"] {
     --color-bg: #1a1e16;
     --color-surface: #24291f;
     --color-surface-2: #2c3227;
@@ -195,8 +195,8 @@
   }
 }
 
-/* -------- Rose & Blush -------- */
-:root[data-palette="pink"] {
+/* -------- Default palette: Rose & Blush (light) -------- */
+:root {
   --color-bg: #f5e8ee;
   --color-surface: #fdf6f9;
   --color-surface-2: #f7ebf1;
@@ -223,7 +223,7 @@
   --color-chart-6: #7fb0a5;
 }
 @media (prefers-color-scheme: dark) {
-  :root[data-palette="pink"] {
+  :root {
     --color-bg: #201319;
     --color-surface: #2a1a22;
     --color-surface-2: #33222c;
