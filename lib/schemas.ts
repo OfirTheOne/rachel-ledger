@@ -12,6 +12,14 @@ export const expenseCreateSchema = z.object({
 });
 export const expenseUpdateSchema = expenseCreateSchema.partial();
 
+// Upsert a budget: categoryId null = the overall monthly cap. amountAgorot <= 0
+// removes the budget.
+export const budgetUpsertSchema = z.object({
+  categoryId: z.string().min(1).nullable(),
+  amountAgorot: z.number().int(),
+});
+export type BudgetUpsertInput = z.infer<typeof budgetUpsertSchema>;
+
 // A bilingual name: either language may be blank, but not both. Blank strings
 // are normalized to null so an omitted language is stored as NULL.
 const optName = z

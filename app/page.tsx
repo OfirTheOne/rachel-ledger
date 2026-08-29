@@ -5,6 +5,7 @@ import { getJSON, postJSON } from "@/lib/api";
 import { formatMoney } from "@/lib/format";
 import { Card } from "@/app/ui/Card";
 import { CategoryChart, DayOfWeekChart } from "@/app/ui/Charts";
+import { BudgetsCard } from "@/app/ui/BudgetsCard";
 import { useT } from "@/app/ui/LanguageProvider";
 import { categoryLabel } from "@/lib/category";
 
@@ -170,6 +171,9 @@ export default function Dashboard() {
               )}
             </div>
           </Card>
+
+          {/* Budgets (renders nothing until budgets are set) */}
+          <BudgetsCard delay={1} />
 
           {/* By category donut */}
           <Card delay={1}>

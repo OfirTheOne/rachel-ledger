@@ -16,6 +16,12 @@ export async function patchJSON<T>(url: string, body: unknown): Promise<T> {
   return r.json();
 }
 
+export async function putJSON<T>(url: string, body: unknown): Promise<T> {
+  const r = await fetch(url, { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+  if (!r.ok) throw new Error(`PUT ${url} failed`);
+  return r.json();
+}
+
 export async function del(url: string): Promise<void> {
   const r = await fetch(url, { method: "DELETE" });
   if (!r.ok) throw new Error(`DELETE ${url} failed`);

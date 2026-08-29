@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getJSON, postJSON, patchJSON, delJSON } from "@/lib/api";
+import { getJSON, postJSON, patchJSON, delJSON, putJSON } from "@/lib/api";
+import { agorotFromInput } from "@/lib/format";
 import { Card } from "@/app/ui/Card";
 import { useT } from "@/app/ui/LanguageProvider";
 import { usePalette } from "@/app/ui/PaletteProvider";
@@ -319,9 +320,12 @@ export default function SettingsPage() {
         )}
       </Card>
 
+      {/* Budgets */}
+      <BudgetsSettingsCard />
+
       {/* Recurring & installments link */}
       <Link href="/recurring" style={{ textDecoration: "none" }}>
-        <Card delay={3} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+        <Card delay={4} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
           <div>
             <div className="eyebrow" style={{ marginBottom: 4 }}>{t("recurring.eyebrow")}</div>
             <h2 style={{ fontSize: 18 }}>{t("settings.recurring")}</h2>
@@ -331,7 +335,7 @@ export default function SettingsPage() {
       </Link>
 
       {/* Account */}
-      <Card delay={4} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
+      <Card delay={5} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
         <div>
           <div className="eyebrow" style={{ marginBottom: 4 }}>{t("settings.account")}</div>
           <h2 style={{ fontSize: 18 }}>{t("settings.logout")}</h2>
@@ -354,6 +358,79 @@ export default function SettingsPage() {
         </button>
       </Card>
     </div>
+  );
+}
+
+type BCat = { id: string; nameEn: string | null; nameHe: string | null };
+type BBudget = { id: string; categoryId: string | null; amountAgorot: number };
+
+function BudgetsSettingsCard() {
+  const { t, locale } = useT();
+  const [cats, setCats] = useState<BCat[]>([]);
+  // input value per key ("overall" or a categoryId), as a shekel string
+  const [values, setValues] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    (async () => {
+      const [c, b] = await Promise.all([
+        getJSON<BCat[]>("/api/categories"),
+        getJSON<BBudget[]>("/api/budgets"),
+      ]);
+      setCats(c);
+      const next: Record<string, string> = {};
+      for (const budget of b) {
+        const key = budget.categoryId ?? "overall";
+        next[key] = (budget.amountAgorot / 100).toFixed(2);
+      }
+      setValues(next);
+    })().catch(() => {});
+  }, []);
+
+  async function save(key: string) {
+    const raw = values[key] ?? "";
+    const amountAgorot = raw.trim() === "" ? 0 : agorotFromInput(raw);
+    const categoryId = key === "overall" ? null : key;
+    try {
+      await putJSON("/api/budgets", { categoryId, amountAgorot: Number.isInteger(amountAgorot) ? amountAgorot : 0 });
+    } catch { /* keep the typed value; user can retry */ }
+  }
+
+  function row(key: string, label: string, dot?: string) {
+    return (
+      <div key={key} style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        {dot && <span aria-hidden style={{ width: 11, height: 11, borderRadius: 4, flexShrink: 0, background: dot }} />}
+        <span style={{ flex: 1, minWidth: 0, color: "var(--color-text)", fontWeight: 500, fontSize: 15 }}>{label}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+          <span className="mono" style={{ color: "var(--color-text-muted)", fontSize: 15 }}>₪</span>
+          <input
+            value={values[key] ?? ""}
+            onChange={(e) => setValues((v) => ({ ...v, [key]: e.target.value }))}
+            onBlur={() => save(key)}
+            onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
+            inputMode="decimal"
+            placeholder="—"
+            style={{ width: 92, padding: "8px 10px", borderRadius: 10, border: "1px solid var(--color-border)", background: "var(--color-surface-2)", color: "var(--color-text)", outline: "none", fontSize: 15, textAlign: "end" }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Card delay={3} style={{ display: "grid", gap: 16 }}>
+      <div>
+        <div className="eyebrow" style={{ marginBottom: 4 }}>{t("settings.manage")}</div>
+        <h2 style={{ fontSize: 20 }}>{t("budget.title")}</h2>
+        <p style={{ color: "var(--color-text-muted)", fontSize: 13.5, marginTop: 6, lineHeight: 1.5 }}>
+          {t("budget.settingsDesc")}
+        </p>
+      </div>
+      <div style={{ display: "grid", gap: 12 }}>
+        {row("overall", t("budget.overall"))}
+        <div style={{ height: 1, background: "var(--color-hairline)" }} />
+        {cats.map((c) => row(c.id, categoryLabel(c, locale), categoryColorVar(c.id)))}
+      </div>
+    </Card>
   );
 }
 

@@ -40,6 +40,19 @@ model Category {
   expenses         Expense[]
   installmentPlans InstallmentPlan[]
   recurringPayments RecurringPayment[]
+  budgets          Budget[]
+}
+
+model Budget {
+  id           String    @id @default(cuid())
+  // null = the single overall monthly budget; otherwise a per-category cap.
+  // Uniqueness of the overall row (categoryId NULL) is enforced in the API,
+  // since Postgres allows multiple NULLs under a unique index.
+  categoryId   String?   @unique
+  category     Category? @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  amountAgorot Int
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
 
 model Expense {

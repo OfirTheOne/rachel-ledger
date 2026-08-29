@@ -67,6 +67,26 @@ const en: Dict = {
   "list.emptyTitle": "An empty ledger",
   "list.emptyBody": "Nothing recorded yet. Your first entry starts the story.",
   "list.addCta": "Add an expense",
+
+  "filter.search": "Search shop or note",
+  "filter.allCategories": "All categories",
+  "filter.from": "From",
+  "filter.to": "To",
+  "filter.clear": "Clear",
+  "filter.noMatches": "No expenses match these filters.",
+
+  "edit.eyebrow": "Edit",
+  "edit.title": "Edit expense",
+  "edit.save": "Save changes",
+  "edit.notFound": "That expense no longer exists.",
+
+  "budget.eyebrow": "This month",
+  "budget.title": "Budgets",
+  "budget.settingsDesc": "Set an optional monthly cap overall and per category. Leave blank to remove.",
+  "budget.overall": "Overall",
+  "budget.remaining": "{amount} left",
+  "budget.over": "{amount} over",
+
   "common.loading": "Loading…",
 
   "settings.eyebrow": "Preferences",
@@ -217,6 +237,26 @@ const he: Dict = {
   "list.emptyTitle": "יומן ריק",
   "list.emptyBody": "עדיין לא נרשם דבר. הרשומה הראשונה שלך פותחת את הסיפור.",
   "list.addCta": "הוספת הוצאה",
+
+  "filter.search": "חיפוש חנות או הערה",
+  "filter.allCategories": "כל הקטגוריות",
+  "filter.from": "מתאריך",
+  "filter.to": "עד תאריך",
+  "filter.clear": "ניקוי",
+  "filter.noMatches": "אין הוצאות שתואמות את הסינון.",
+
+  "edit.eyebrow": "עריכה",
+  "edit.title": "עריכת הוצאה",
+  "edit.save": "שמירת שינויים",
+  "edit.notFound": "ההוצאה הזו כבר לא קיימת.",
+
+  "budget.eyebrow": "החודש",
+  "budget.title": "תקציבים",
+  "budget.settingsDesc": "קבעו תקרה חודשית כללית ולכל קטגוריה (רשות). השאירו ריק כדי להסיר.",
+  "budget.overall": "כללי",
+  "budget.remaining": "נשארו {amount}",
+  "budget.over": "חריגה של {amount}",
+
   "common.loading": "טוען…",
 
   "settings.eyebrow": "העדפות",

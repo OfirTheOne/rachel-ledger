@@ -1,111 +1,94 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { getJSON, postJSON } from "@/lib/api";
-import { agorotFromInput, formatMoney } from "@/lib/format";
+import { agorotFromInput } from "@/lib/format";
 import { Card } from "@/app/ui/Card";
 import { useT } from "@/app/ui/LanguageProvider";
 import { categoryLabel } from "@/lib/category";
-import { ExpenseForm, type ExpensePayload } from "@/app/ui/ExpenseForm";
 
 type Category = { id: string; nameEn: string | null; nameHe: string | null };
 const METHOD_VALUES = ["Cash", "Credit", "Debit", "BankTransfer", "Other"];
-type Mode = "oneTime" | "installments";
 
-export default function AddPage() {
-  const { t } = useT();
-  const router = useRouter();
-  const [mode, setMode] = useState<Mode>("oneTime");
+export type ExpensePayload = {
+  amountAgorot: number;
+  date: string;
+  categoryId: string;
+  shop: string;
+  note?: string;
+  paymentMethod: string;
+};
 
-  async function createOneTime(payload: ExpensePayload) {
-    await postJSON("/api/expenses", payload);
-    router.push("/expenses");
-  }
+export type ExpenseInitial = {
+  amount?: string;
+  date?: string;
+  shop?: string;
+  note?: string;
+  categoryId?: string;
+  paymentMethod?: string;
+};
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-      {/* Type selector */}
-      <div
-        className="rise"
-        style={{
-          display: "flex", gap: 4, padding: 5, borderRadius: 999,
-          background: "var(--color-surface)", border: "1px solid var(--color-border)",
-          boxShadow: "var(--shadow-sm)",
-        }}
-      >
-        {([
-          ["oneTime", () => setMode("oneTime")],
-          ["installments", () => setMode("installments")],
-          ["recurring", () => router.push("/recurring")],
-        ] as const).map(([key, onClick]) => {
-          const active = mode === key;
-          return (
-            <button
-              key={key}
-              onClick={onClick}
-              style={{
-                flex: 1, cursor: "pointer", padding: "9px 4px", borderRadius: 999, border: 0, fontSize: 13.5,
-                fontWeight: active ? 600 : 500,
-                color: active ? "var(--color-accent-contrast)" : "var(--color-text-muted)",
-                background: active ? "linear-gradient(145deg, var(--color-accent), var(--color-accent-2))" : "transparent",
-                transition: "color 0.2s ease, background 0.2s ease",
-              }}
-            >
-              {t(`add.type.${key}`)}
-            </button>
-          );
-        })}
-      </div>
-
-      {mode === "oneTime" ? (
-        <ExpenseForm submitLabel={t("add.save")} savingLabel={t("add.saving")} onSubmit={createOneTime} />
-      ) : (
-        <InstallmentsForm />
-      )}
-    </div>
-  );
-}
-
-function InstallmentsForm() {
+// The shared one-time expense form (amount, shop, date, note, category, payment)
+// used by both the Add screen (one-time mode) and the Edit screen.
+export function ExpenseForm({
+  initial,
+  submitLabel,
+  savingLabel,
+  onSubmit,
+}: {
+  initial?: ExpenseInitial;
+  submitLabel: string;
+  savingLabel: string;
+  onSubmit: (payload: ExpensePayload) => Promise<void>;
+}) {
   const { t, locale } = useT();
-  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
-  const [amount, setAmount] = useState("");
-  const [count, setCount] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
-  const [shop, setShop] = useState("");
-  const [note, setNote] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("Credit");
+  const [amount, setAmount] = useState(initial?.amount ?? "");
+  const [date, setDate] = useState(initial?.date ?? new Date().toISOString().slice(0, 10));
+  const [shop, setShop] = useState(initial?.shop ?? "");
+  const [note, setNote] = useState(initial?.note ?? "");
+  const [categoryId, setCategoryId] = useState(initial?.categoryId ?? "");
+  const [paymentMethod, setPaymentMethod] = useState(initial?.paymentMethod ?? "Credit");
+  const [suggesting, setSuggesting] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    getJSON<Category[]>("/api/categories").then((c) => { setCategories(c); if (c[0]) setCategoryId(c[0].id); });
-  }, []);
+    getJSON<Category[]>("/api/categories").then((c) => {
+      setCategories(c);
+      if (!initial?.categoryId && c[0]) setCategoryId((prev) => prev || c[0].id);
+    });
+  }, [initial?.categoryId]);
 
-  const nPayments = parseInt(count, 10);
-  const totalA = agorotFromInput(amount);
-  const perMonth =
-    Number.isInteger(totalA) && totalA > 0 && Number.isInteger(nPayments) && nPayments >= 2
-      ? formatMoney(Math.floor(totalA / nPayments))
-      : null;
-  const canSave = amount !== "" && shop !== "" && categoryId !== "" && Number.isInteger(nPayments) && nPayments >= 2;
+  async function suggest() {
+    if (!shop) return;
+    setSuggesting(true);
+    try {
+      const canonical = (c: Category) => c.nameEn?.trim() || c.nameHe?.trim() || "";
+      const r = await postJSON<{ suggestedCategory: string }>("/api/gemini/categorize", {
+        shop, note, amount, categories: categories.map(canonical).filter(Boolean),
+      });
+      const match = categories.find((c) => canonical(c) === r.suggestedCategory);
+      if (match) setCategoryId(match.id);
+    } catch { /* graceful: keep manual choice */ }
+    finally { setSuggesting(false); }
+  }
+
+  const amountAgorot = agorotFromInput(amount);
+  const canSave = amount !== "" && shop !== "" && categoryId !== "";
 
   async function save() {
-    if (!canSave || saving) return;
+    if (!Number.isInteger(amountAgorot) || amountAgorot <= 0 || !shop || !categoryId || saving) return;
     setSaving(true);
     try {
-      await postJSON("/api/installments", { totalAgorot: totalA, count: nPayments, startDate: date, categoryId, shop, note: note || undefined, paymentMethod });
-      router.push("/expenses");
+      await onSubmit({ amountAgorot, date, categoryId, shop, note: note || undefined, paymentMethod });
     } finally { setSaving(false); }
   }
 
   return (
     <>
-      {/* Total hero */}
+      {/* Amount hero */}
       <Card variant="accent" delay={0} style={{ padding: "22px 24px" }}>
         <label className="eyebrow" htmlFor="amount" style={{ color: "var(--color-accent-contrast)", opacity: 0.8, display: "block" }}>
-          {t("add.total")}
+          {t("add.amount")}
         </label>
         <div style={{ display: "flex", alignItems: "center", gap: 8, marginTop: 8 }}>
           <span className="mono" style={{ fontSize: 40, fontWeight: 500, color: "var(--color-accent-contrast)", opacity: 0.85 }}>₪</span>
@@ -127,7 +110,7 @@ function InstallmentsForm() {
 
       <Card delay={1} style={{ display: "grid", gap: 18 }}>
         <Field label={t("add.shop")}>
-          <input style={inputStyle} placeholder={t("add.shopPlaceholder")} value={shop} onChange={(e) => setShop(e.target.value)} />
+          <input style={inputStyle} placeholder={t("add.shopPlaceholder")} value={shop} onChange={(e) => setShop(e.target.value)} onBlur={suggest} />
         </Field>
 
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr)", gap: 12 }}>
@@ -139,18 +122,24 @@ function InstallmentsForm() {
           </Field>
         </div>
 
-        <Field label={t("add.numPayments")}>
-          <input style={inputStyle} type="number" inputMode="numeric" min={2} max={120} placeholder="10" value={count} onChange={(e) => setCount(e.target.value)} />
-          {perMonth && (
-            <div style={{ color: "var(--color-text-muted)", fontSize: 13, marginTop: 8 }}>
-              {t("add.perMonth", { amount: perMonth, count: nPayments })}
-            </div>
-          )}
-        </Field>
-
         {/* Category chips */}
         <div>
-          <span className="eyebrow" style={{ display: "block", marginBottom: 10 }}>{t("add.category")}</span>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+            <span className="eyebrow">{t("add.category")}</span>
+            <button
+              type="button"
+              onClick={suggest}
+              disabled={suggesting || !shop}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 6, cursor: shop ? "pointer" : "default",
+                fontSize: 12.5, fontWeight: 600, color: "var(--color-accent)", background: "var(--color-accent-soft)",
+                border: "1px solid transparent", borderRadius: 999, padding: "5px 11px", opacity: !shop ? 0.5 : 1,
+              }}
+            >
+              <Sparkle spinning={suggesting} />
+              {suggesting ? t("add.thinking") : t("add.aiSuggest")}
+            </button>
+          </div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {categories.map((c) => {
               const active = c.id === categoryId;
@@ -213,7 +202,7 @@ function InstallmentsForm() {
           transition: "opacity 0.2s ease",
         }}
       >
-        {saving ? t("add.saving") : t("add.saveInstallments")}
+        {saving ? savingLabel : submitLabel}
       </button>
     </>
   );
@@ -232,3 +221,11 @@ const inputStyle: React.CSSProperties = {
   width: "100%", minWidth: 0, padding: "12px 14px", borderRadius: 13, border: "1px solid var(--color-border)",
   background: "var(--color-surface-2)", color: "var(--color-text)", outline: "none", fontSize: 15,
 };
+
+function Sparkle({ spinning }: { spinning: boolean }) {
+  return (
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" style={spinning ? { animation: "spin 1.1s linear infinite" } : undefined} aria-hidden>
+      <path d="M12 2l1.9 5.6a4 4 0 0 0 2.5 2.5L22 12l-5.6 1.9a4 4 0 0 0-2.5 2.5L12 22l-1.9-5.6a4 4 0 0 0-2.5-2.5L2 12l5.6-1.9a4 4 0 0 0 2.5-2.5L12 2z" fill="currentColor" />
+    </svg>
+  );
+}
