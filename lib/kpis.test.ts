@@ -2,9 +2,9 @@ import { describe, it, expect } from "vitest";
 import { aggregateKpis, periodRange } from "./kpis";
 
 const rows = [
-  { amountAgorot: 1000, date: "2026-07-27", categoryName: "Groceries", shop: "Shufersal" }, // Monday
-  { amountAgorot: 500,  date: "2026-07-27", categoryName: "Dining",    shop: "Cafe" },      // Monday
-  { amountAgorot: 2000, date: "2026-07-31", categoryName: "Groceries", shop: "Rami Levy" }, // Friday
+  { amountAgorot: 1000, date: "2026-07-27", categoryId: "c-groc", categoryNameEn: "Groceries", categoryNameHe: "מכולת", shop: "Shufersal" }, // Monday
+  { amountAgorot: 500,  date: "2026-07-27", categoryId: "c-dine", categoryNameEn: "Dining",    categoryNameHe: "מסעדות", shop: "Cafe" },      // Monday
+  { amountAgorot: 2000, date: "2026-07-31", categoryId: "c-groc", categoryNameEn: "Groceries", categoryNameHe: "מכולת", shop: "Rami Levy" }, // Friday
 ];
 
 describe("aggregateKpis", () => {
@@ -13,10 +13,10 @@ describe("aggregateKpis", () => {
     expect(k.total).toBe(3500);
     expect(k.count).toBe(3);
   });
-  it("groups by category sorted desc", () => {
+  it("groups by category id (carrying both names) sorted desc", () => {
     const k = aggregateKpis(rows);
-    expect(k.byCategory[0]).toEqual({ name: "Groceries", total: 3000 });
-    expect(k.byCategory[1]).toEqual({ name: "Dining", total: 500 });
+    expect(k.byCategory[0]).toEqual({ id: "c-groc", nameEn: "Groceries", nameHe: "מכולת", total: 3000 });
+    expect(k.byCategory[1]).toEqual({ id: "c-dine", nameEn: "Dining", nameHe: "מסעדות", total: 500 });
   });
   it("groups by shop sorted desc", () => {
     const k = aggregateKpis(rows);

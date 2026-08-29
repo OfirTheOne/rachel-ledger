@@ -10,12 +10,14 @@ export async function GET(req: NextRequest) {
 
   const expenses = await prisma.expense.findMany({
     where: { date: { gte: new Date(start), lt: new Date(end) } },
-    include: { category: { select: { name: true } } },
+    include: { category: { select: { id: true, nameEn: true, nameHe: true } } },
   });
   const rows: ExpenseRow[] = expenses.map((e) => ({
     amountAgorot: e.amountAgorot,
     date: e.date.toISOString().slice(0, 10),
-    categoryName: e.category.name,
+    categoryId: e.category.id,
+    categoryNameEn: e.category.nameEn,
+    categoryNameHe: e.category.nameHe,
     shop: e.shop,
   }));
   return NextResponse.json({ range, start, end, ...aggregateKpis(rows) });

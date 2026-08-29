@@ -86,6 +86,8 @@ const en: Dict = {
   "settings.categoriesDesc":
     "Add, rename, or remove categories. Deleting one moves its expenses to “{fallback}”.",
   "settings.newCategory": "New category name",
+  "settings.nameEn": "English name",
+  "settings.nameHe": "Hebrew name",
   "settings.add": "Add",
   "settings.rename": "Rename",
   "settings.delete": "Delete",
@@ -234,6 +236,8 @@ const he: Dict = {
   "settings.categoriesDesc":
     "הוסיפו, שנו שם או מחקו קטגוריות. מחיקה מעבירה את ההוצאות אל “{fallback}”.",
   "settings.newCategory": "שם קטגוריה חדשה",
+  "settings.nameEn": "שם באנגלית",
+  "settings.nameHe": "שם בעברית",
   "settings.add": "הוספה",
   "settings.rename": "שינוי שם",
   "settings.delete": "מחיקה",

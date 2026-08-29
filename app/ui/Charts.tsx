@@ -13,6 +13,7 @@ import {
 import { formatMoney } from "@/lib/format";
 import { useT } from "@/app/ui/LanguageProvider";
 import { dowShort, dowFull } from "@/lib/i18n";
+import { categoryColorIndex } from "@/lib/category";
 
 const CHART_VARS = [
   "--color-chart-1",
@@ -62,7 +63,7 @@ function MoneyTooltip({
 }
 
 /* ---- Category donut with center total + legend ---- */
-export function CategoryChart({ data }: { data: { name: string; total: number }[] }) {
+export function CategoryChart({ data }: { data: { id: string; name: string; total: number }[] }) {
   const { t } = useT();
   const total = data.reduce((s, d) => s + d.total, 0);
   return (
@@ -92,8 +93,8 @@ export function CategoryChart({ data }: { data: { name: string; total: number }[
               endAngle={-270}
               isAnimationActive={false}
             >
-              {data.map((_, i) => (
-                <Cell key={i} fill={`url(#slice-${i % CHART_VARS.length})`} />
+              {data.map((d, i) => (
+                <Cell key={i} fill={`url(#slice-${categoryColorIndex(d.id)})`} />
               ))}
             </Pie>
             <Tooltip content={<MoneyTooltip />} cursor={false} />
@@ -122,11 +123,11 @@ export function CategoryChart({ data }: { data: { name: string; total: number }[
       </div>
 
       <ul style={{ listStyle: "none", margin: "8px 0 0", padding: 0, display: "grid", gap: 8 }}>
-        {data.map((d, i) => {
+        {data.map((d) => {
           const pct = total ? Math.round((d.total / total) * 100) : 0;
           return (
             <li
-              key={d.name}
+              key={d.id}
               style={{ display: "flex", alignItems: "center", gap: 10, fontSize: 14 }}
             >
               <span
@@ -136,7 +137,7 @@ export function CategoryChart({ data }: { data: { name: string; total: number }[
                   height: 10,
                   borderRadius: 3,
                   flexShrink: 0,
-                  background: `var(${CHART_VARS[i % CHART_VARS.length]})`,
+                  background: `var(${CHART_VARS[categoryColorIndex(d.id)]})`,
                 }}
               />
               <span style={{ color: "var(--color-text)", flex: 1 }}>{d.name}</span>

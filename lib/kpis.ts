@@ -1,19 +1,32 @@
-export type ExpenseRow = { amountAgorot: number; date: string; categoryName: string; shop: string };
+export type ExpenseRow = {
+  amountAgorot: number;
+  date: string;
+  categoryId: string;
+  categoryNameEn: string | null;
+  categoryNameHe: string | null;
+  shop: string;
+};
 
 export function aggregateKpis(rows: ExpenseRow[]) {
   let total = 0;
-  const cat = new Map<string, number>();
+  // Group categories by stable id, not by display name, so bilingual labels
+  // never split or merge slices when the UI language changes.
+  const cat = new Map<string, { nameEn: string | null; nameHe: string | null; total: number }>();
   const shop = new Map<string, number>();
   const dow = Array.from({ length: 7 }, (_, day) => ({ day, total: 0 }));
 
   for (const r of rows) {
     total += r.amountAgorot;
-    cat.set(r.categoryName, (cat.get(r.categoryName) ?? 0) + r.amountAgorot);
+    const cur = cat.get(r.categoryId) ?? { nameEn: r.categoryNameEn, nameHe: r.categoryNameHe, total: 0 };
+    cur.total += r.amountAgorot;
+    cat.set(r.categoryId, cur);
     shop.set(r.shop, (shop.get(r.shop) ?? 0) + r.amountAgorot);
     const d = new Date(`${r.date}T00:00:00`).getDay(); // 0=Sun..6=Sat
     dow[d].total += r.amountAgorot;
   }
-  const byCategory = [...cat].map(([name, t]) => ({ name, total: t })).sort((a, b) => b.total - a.total);
+  const byCategory = [...cat]
+    .map(([id, v]) => ({ id, nameEn: v.nameEn, nameHe: v.nameHe, total: v.total }))
+    .sort((a, b) => b.total - a.total);
   const byShop = [...shop].map(([s, t]) => ({ shop: s, total: t })).sort((a, b) => b.total - a.total);
   return { total, count: rows.length, byCategory, byShop, byDayOfWeek: dow };
 }

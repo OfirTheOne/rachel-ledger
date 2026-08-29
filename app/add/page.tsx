@@ -5,13 +5,14 @@ import { getJSON, postJSON } from "@/lib/api";
 import { agorotFromInput, formatMoney } from "@/lib/format";
 import { Card } from "@/app/ui/Card";
 import { useT } from "@/app/ui/LanguageProvider";
+import { categoryLabel } from "@/lib/category";
 
-type Category = { id: string; name: string };
+type Category = { id: string; nameEn: string | null; nameHe: string | null };
 const METHOD_VALUES = ["Cash", "Credit", "Debit", "BankTransfer", "Other"];
 type Mode = "oneTime" | "installments";
 
 export default function AddPage() {
-  const { t } = useT();
+  const { t, locale } = useT();
   const router = useRouter();
   const [mode, setMode] = useState<Mode>("oneTime");
   const [categories, setCategories] = useState<Category[]>([]);
@@ -33,10 +34,13 @@ export default function AddPage() {
     if (!shop) return;
     setSuggesting(true);
     try {
+      // Send one canonical label per category (English preferred) and map the
+      // model's pick back to the category id.
+      const canonical = (c: Category) => c.nameEn?.trim() || c.nameHe?.trim() || "";
       const r = await postJSON<{ suggestedCategory: string }>("/api/gemini/categorize", {
-        shop, note, amount, categories: categories.map((c) => c.name),
+        shop, note, amount, categories: categories.map(canonical).filter(Boolean),
       });
-      const match = categories.find((c) => c.name === r.suggestedCategory);
+      const match = categories.find((c) => canonical(c) === r.suggestedCategory);
       if (match) setCategoryId(match.id);
     } catch { /* graceful: keep manual choice */ }
     finally { setSuggesting(false); }
@@ -256,7 +260,7 @@ export default function AddPage() {
                     transition: "all 0.18s ease",
                   }}
                 >
-                  {c.name}
+                  {categoryLabel(c, locale)}
                 </button>
               );
             })}

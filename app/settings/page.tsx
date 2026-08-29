@@ -7,28 +7,21 @@ import { useT } from "@/app/ui/LanguageProvider";
 import { usePalette } from "@/app/ui/PaletteProvider";
 import { LOCALES, type Locale } from "@/lib/i18n";
 import { PALETTES, type Palette } from "@/lib/palette";
+import { categoryLabel, categoryColorVar } from "@/lib/category";
 
-type Category = { id: string; name: string };
-const FALLBACK = "Other";
+type Category = { id: string; nameEn: string | null; nameHe: string | null };
+const FALLBACK = "Other"; // matched against nameEn
 const LOCALE_LABELS: Record<Locale, string> = { en: "English", he: "עברית" };
-
-const CHART_VARS = [
-  "--color-chart-1", "--color-chart-2", "--color-chart-3",
-  "--color-chart-4", "--color-chart-5", "--color-chart-6",
-];
-function categoryColor(name: string) {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = (h + name.charCodeAt(i)) % CHART_VARS.length;
-  return `var(${CHART_VARS[h]})`;
-}
 
 export default function SettingsPage() {
   const { t, locale, setLocale } = useT();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [newName, setNewName] = useState("");
+  const [newEn, setNewEn] = useState("");
+  const [newHe, setNewHe] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editName, setEditName] = useState("");
+  const [editEn, setEditEn] = useState("");
+  const [editHe, setEditHe] = useState("");
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -44,35 +37,43 @@ export default function SettingsPage() {
   function flash(msg: string) { setError(null); setMessage(msg); setTimeout(() => setMessage(null), 3500); }
 
   async function add() {
-    const name = newName.trim();
-    if (!name || busy) return;
+    const en = newEn.trim();
+    const he = newHe.trim();
+    if ((!en && !he) || busy) return;
     setBusy(true); setError(null);
     try {
-      const created = await postJSON<Category>("/api/categories", { name });
+      const created = await postJSON<Category>("/api/categories", {
+        nameEn: en || null,
+        nameHe: he || null,
+      });
       setCategories((c) => [...c, created]);
-      setNewName("");
-      flash(t("msg.added", { name: created.name }));
+      setNewEn(""); setNewHe("");
+      flash(t("msg.added", { name: categoryLabel(created, locale) }));
     } catch {
-      setError(t("err.add", { name }));
+      setError(t("err.add", { name: en || he }));
     } finally { setBusy(false); }
   }
 
   function startEdit(c: Category) {
     setConfirmingId(null); setError(null);
-    setEditingId(c.id); setEditName(c.name);
+    setEditingId(c.id); setEditEn(c.nameEn ?? ""); setEditHe(c.nameHe ?? "");
   }
 
   async function saveEdit() {
-    const name = editName.trim();
-    if (!editingId || !name || busy) return;
+    const en = editEn.trim();
+    const he = editHe.trim();
+    if (!editingId || (!en && !he) || busy) return;
     setBusy(true); setError(null);
     try {
-      const updated = await patchJSON<Category>(`/api/categories/${editingId}`, { name });
+      const updated = await patchJSON<Category>(`/api/categories/${editingId}`, {
+        nameEn: en || null,
+        nameHe: he || null,
+      });
       setCategories((cs) => cs.map((c) => (c.id === updated.id ? updated : c)));
       setEditingId(null);
       flash(t("msg.renamed"));
     } catch {
-      setError(t("err.rename", { name }));
+      setError(t("err.rename", { name: en || he }));
     } finally { setBusy(false); }
   }
 
@@ -86,11 +87,11 @@ export default function SettingsPage() {
       flash(
         res.movedCount > 0
           ? t(res.movedCount === 1 ? "msg.deletedMoved.one" : "msg.deletedMoved.other", {
-              name: c.name,
+              name: categoryLabel(c, locale),
               count: res.movedCount,
               fallback: FALLBACK,
             })
-          : t("msg.deleted", { name: c.name }),
+          : t("msg.deleted", { name: categoryLabel(c, locale) }),
       );
     } catch {
       setError(t("err.delete"));
@@ -168,31 +169,31 @@ export default function SettingsPage() {
           </p>
         </div>
 
-        {/* Add */}
-        <div style={{ display: "flex", gap: 8 }}>
-          <input
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") add(); }}
-            placeholder={t("settings.newCategory")}
-            style={{
-              flex: 1,
-              minWidth: 0,
-              padding: "12px 14px",
-              borderRadius: 13,
-              border: "1px solid var(--color-border)",
-              background: "var(--color-surface-2)",
-              color: "var(--color-text)",
-              outline: "none",
-              fontSize: 15,
-            }}
-          />
+        {/* Add — English + Hebrew, either one optional */}
+        <div style={{ display: "grid", gap: 8 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 8 }}>
+            <input
+              value={newEn}
+              onChange={(e) => setNewEn(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") add(); }}
+              placeholder={t("settings.nameEn")}
+              style={nameInput}
+            />
+            <input
+              value={newHe}
+              onChange={(e) => setNewHe(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") add(); }}
+              placeholder={t("settings.nameHe")}
+              dir="rtl"
+              style={nameInput}
+            />
+          </div>
           <button
             onClick={add}
-            disabled={busy || !newName.trim()}
+            disabled={busy || (!newEn.trim() && !newHe.trim())}
             style={{
-              cursor: newName.trim() ? "pointer" : "default",
-              padding: "0 18px",
+              cursor: newEn.trim() || newHe.trim() ? "pointer" : "default",
+              padding: "12px 18px",
               borderRadius: 13,
               border: 0,
               fontSize: 15,
@@ -200,8 +201,7 @@ export default function SettingsPage() {
               color: "var(--color-accent-contrast)",
               background: "linear-gradient(145deg, var(--color-accent), var(--color-accent-2))",
               boxShadow: "var(--shadow-sm)",
-              opacity: newName.trim() && !busy ? 1 : 0.5,
-              whiteSpace: "nowrap",
+              opacity: (newEn.trim() || newHe.trim()) && !busy ? 1 : 0.5,
             }}
           >
             {t("settings.add")}
@@ -231,9 +231,12 @@ export default function SettingsPage() {
         ) : (
           <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "grid", gap: 8 }}>
             {categories.map((c) => {
-              const isFallback = c.name === FALLBACK;
+              const isFallback = c.nameEn === FALLBACK;
               const editing = editingId === c.id;
               const confirming = confirmingId === c.id;
+              const primary = categoryLabel(c, locale);
+              // The name in the *other* language, shown faded when present.
+              const secondary = locale === "he" ? c.nameEn : c.nameHe;
               return (
                 <li
                   key={c.id}
@@ -249,24 +252,36 @@ export default function SettingsPage() {
                 >
                   <span
                     aria-hidden
-                    style={{ width: 11, height: 11, borderRadius: 4, flexShrink: 0, background: categoryColor(c.name) }}
+                    style={{ width: 11, height: 11, borderRadius: 4, flexShrink: 0, background: categoryColorVar(c.id) }}
                   />
 
                   {editing ? (
-                    <input
-                      autoFocus
-                      value={editName}
-                      onChange={(e) => setEditName(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditingId(null); }}
-                      style={{
-                        flex: 1, minWidth: 0, padding: "7px 10px", borderRadius: 9,
-                        border: "1px solid var(--color-accent)", background: "var(--color-surface)",
-                        color: "var(--color-text)", outline: "none", fontSize: 15,
-                      }}
-                    />
+                    <div style={{ flex: 1, minWidth: 0, display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 6 }}>
+                      <input
+                        autoFocus
+                        value={editEn}
+                        onChange={(e) => setEditEn(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditingId(null); }}
+                        placeholder={t("settings.nameEn")}
+                        style={editInput}
+                      />
+                      <input
+                        value={editHe}
+                        onChange={(e) => setEditHe(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditingId(null); }}
+                        placeholder={t("settings.nameHe")}
+                        dir="rtl"
+                        style={editInput}
+                      />
+                    </div>
                   ) : (
                     <span style={{ flex: 1, minWidth: 0, color: "var(--color-text)", fontWeight: 500, fontSize: 15 }}>
-                      {c.name}
+                      {primary}
+                      {secondary && (
+                        <span style={{ marginInlineStart: 8, fontSize: 13, fontWeight: 400, color: "var(--color-text-muted)" }}>
+                          {secondary}
+                        </span>
+                      )}
                       {isFallback && (
                         <span className="eyebrow" style={{ marginInlineStart: 8, fontSize: 9, opacity: 0.8 }}>
                           {t("settings.fallback")}
@@ -278,7 +293,7 @@ export default function SettingsPage() {
                   {/* Actions */}
                   {editing ? (
                     <div style={{ display: "flex", gap: 6 }}>
-                      <PillBtn onClick={saveEdit} disabled={busy || !editName.trim()} kind="accent">{t("settings.save")}</PillBtn>
+                      <PillBtn onClick={saveEdit} disabled={busy || (!editEn.trim() && !editHe.trim())} kind="accent">{t("settings.save")}</PillBtn>
                       <PillBtn onClick={() => setEditingId(null)}>{t("settings.cancel")}</PillBtn>
                     </div>
                   ) : confirming ? (
@@ -341,6 +356,17 @@ export default function SettingsPage() {
     </div>
   );
 }
+
+const nameInput: React.CSSProperties = {
+  width: "100%", minWidth: 0, padding: "12px 14px", borderRadius: 13,
+  border: "1px solid var(--color-border)", background: "var(--color-surface-2)",
+  color: "var(--color-text)", outline: "none", fontSize: 15,
+};
+const editInput: React.CSSProperties = {
+  width: "100%", minWidth: 0, padding: "7px 10px", borderRadius: 9,
+  border: "1px solid var(--color-accent)", background: "var(--color-surface)",
+  color: "var(--color-text)", outline: "none", fontSize: 15,
+};
 
 // Representative light-mode colours per palette (mirrors app/theme.css) for the
 // swatch previews — accent gradient over the palette's background tint.

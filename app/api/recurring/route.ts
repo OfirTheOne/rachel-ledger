@@ -4,7 +4,7 @@ import { recurringCreateSchema } from "@/lib/schemas";
 
 export async function GET() {
   const items = await prisma.recurringPayment.findMany({
-    include: { category: { select: { name: true } } },
+    include: { category: { select: { id: true, nameEn: true, nameHe: true } } },
     orderBy: [{ active: "desc" }, { createdAt: "desc" }],
   });
   return NextResponse.json(items);

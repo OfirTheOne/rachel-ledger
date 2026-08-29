@@ -8,7 +8,7 @@ export async function GET() {
   const today = new Date();
   const plans = await prisma.installmentPlan.findMany({
     include: {
-      category: { select: { name: true } },
+      category: { select: { id: true, nameEn: true, nameHe: true } },
       expenses: { select: { date: true, amountAgorot: true } },
     },
     orderBy: { createdAt: "desc" },

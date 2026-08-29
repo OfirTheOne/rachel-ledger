@@ -26,7 +26,14 @@ enum OccurrenceStatus {
 
 model Category {
   id               String             @id @default(cuid())
-  name             String             @unique
+  // Legacy single label — retained (nullable) so existing data is preserved and
+  // backfilled into nameEn by the seed; no longer written for new categories.
+  name             String?            @unique
+  // Bilingual labels. At least one is required (enforced in the API). Uniqueness
+  // is per-language; Postgres allows many NULLs, so an EN-only or HE-only
+  // category doesn't collide on the language it lacks.
+  nameEn           String?            @unique
+  nameHe           String?            @unique
   isDefault        Boolean            @default(false)
   sortOrder        Int                @default(0)
   archived         Boolean            @default(false)

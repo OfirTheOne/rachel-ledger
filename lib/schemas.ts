@@ -12,11 +12,25 @@ export const expenseCreateSchema = z.object({
 });
 export const expenseUpdateSchema = expenseCreateSchema.partial();
 
-export const categoryCreateSchema = z.object({ name: z.string().min(1).max(40) });
-export const categoryUpdateSchema = z.object({
-  name: z.string().min(1).max(40).optional(),
-  archived: z.boolean().optional(),
-});
+// A bilingual name: either language may be blank, but not both. Blank strings
+// are normalized to null so an omitted language is stored as NULL.
+const optName = z
+  .string()
+  .max(40)
+  .transform((s) => s.trim())
+  .transform((s) => (s === "" ? null : s))
+  .nullable()
+  .optional();
+
+export const categoryCreateSchema = z
+  .object({ nameEn: optName, nameHe: optName })
+  .refine((d) => !!(d.nameEn || d.nameHe), { message: "At least one name is required" });
+
+export const categoryUpdateSchema = z
+  .object({ nameEn: optName, nameHe: optName, archived: z.boolean().optional() })
+  .refine((d) => d.archived !== undefined || d.nameEn !== undefined || d.nameHe !== undefined, {
+    message: "Nothing to update",
+  });
 
 const dateStr = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
 

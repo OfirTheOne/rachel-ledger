@@ -4,11 +4,13 @@ import { getJSON, postJSON, patchJSON, delJSON } from "@/lib/api";
 import { agorotFromInput, formatMoney } from "@/lib/format";
 import { Card } from "@/app/ui/Card";
 import { useT } from "@/app/ui/LanguageProvider";
+import { categoryLabel } from "@/lib/category";
 
-type Category = { id: string; name: string };
+type CatRef = { id: string; nameEn: string | null; nameHe: string | null };
+type Category = CatRef;
 type Template = {
   id: string; name: string; amountAgorot: number | null; dayOfMonth: number | null;
-  active: boolean; paymentMethod: string; category: { name: string };
+  active: boolean; paymentMethod: string; category: CatRef;
 };
 type Occurrence = {
   id: string; periodMonth: string;
@@ -16,7 +18,7 @@ type Occurrence = {
 };
 type Plan = {
   id: string; shop: string; totalAmountAgorot: number; count: number;
-  category: { name: string }; paidCount: number; paidAgorot: number;
+  category: CatRef; paidCount: number; paidAgorot: number;
 };
 const METHOD_VALUES = ["Cash", "Credit", "Debit", "BankTransfer", "Other"];
 
@@ -129,7 +131,7 @@ export default function RecurringPage() {
                   <span className="eyebrow" style={{ fontSize: 10 }}>{monthLabel(o.periodMonth)}</span>
                 </div>
                 <div style={{ color: "var(--color-text-muted)", fontSize: 12.5 }}>
-                  {o.recurringPayment.category.name}
+                  {categoryLabel(o.recurringPayment.category, locale)}
                   {variable && ` · ${t("recurring.variableTag")}`}
                 </div>
                 <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -169,7 +171,7 @@ export default function RecurringPage() {
                   </div>
                   <div className="mono" style={{ color: "var(--color-text-muted)", fontSize: 12.5 }}>
                     {tpl.amountAgorot != null ? formatMoney(tpl.amountAgorot) : t("recurring.variableTag")}
-                    {" · "}{tpl.category.name}
+                    {" · "}{categoryLabel(tpl.category, locale)}
                   </div>
                 </div>
                 {confirmingDelete === `t:${tpl.id}` ? (
@@ -226,7 +228,7 @@ export default function RecurringPage() {
 }
 
 function NewTemplateForm({ categories, onCreated }: { categories: Category[]; onCreated: () => void }) {
-  const { t } = useT();
+  const { t, locale } = useT();
   const [name, setName] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("BankTransfer");
@@ -266,7 +268,7 @@ function NewTemplateForm({ categories, onCreated }: { categories: Category[]; on
         {categories.map((c) => {
           const active = c.id === categoryId;
           return (
-            <button key={c.id} type="button" onClick={() => setCategoryId(c.id)} style={{ ...chip, ...(active ? chipActive : {}) }}>{c.name}</button>
+            <button key={c.id} type="button" onClick={() => setCategoryId(c.id)} style={{ ...chip, ...(active ? chipActive : {}) }}>{categoryLabel(c, locale)}</button>
           );
         })}
       </div>

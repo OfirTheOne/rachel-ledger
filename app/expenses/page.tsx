@@ -6,6 +6,7 @@ import { formatMoney } from "@/lib/format";
 import { Card } from "@/app/ui/Card";
 import { useT } from "@/app/ui/LanguageProvider";
 import type { Locale } from "@/lib/i18n";
+import { categoryLabel, categoryColorVar } from "@/lib/category";
 
 type Expense = {
   id: string;
@@ -13,21 +14,12 @@ type Expense = {
   date: string;
   shop: string;
   note: string | null;
-  category: { name: string };
+  category: { id: string; nameEn: string | null; nameHe: string | null };
   installmentSeq: number | null;
   installmentCount: number | null;
   recurringPaymentId: string | null;
 };
 
-const CHART_VARS = [
-  "--color-chart-1", "--color-chart-2", "--color-chart-3",
-  "--color-chart-4", "--color-chart-5", "--color-chart-6",
-];
-function categoryColor(name: string) {
-  let h = 0;
-  for (let i = 0; i < name.length; i++) h = (h + name.charCodeAt(i)) % CHART_VARS.length;
-  return `var(${CHART_VARS[h]})`;
-}
 function prettyDate(iso: string, locale: Locale) {
   const d = new Date(`${iso.slice(0, 10)}T00:00:00`);
   return d.toLocaleDateString(locale === "he" ? "he-IL" : "en-US", {
@@ -126,7 +118,7 @@ export default function ExpensesPage() {
         >
           <span
             aria-hidden
-            title={e.category.name}
+            title={categoryLabel(e.category, locale)}
             style={{
               width: 40,
               height: 40,
@@ -143,7 +135,7 @@ export default function ExpensesPage() {
                 width: 12,
                 height: 12,
                 borderRadius: 4,
-                background: categoryColor(e.category.name),
+                background: categoryColorVar(e.category.id),
               }}
             />
           </span>
@@ -169,7 +161,7 @@ export default function ExpensesPage() {
               ) : null}
             </div>
             <div style={{ color: "var(--color-text-muted)", fontSize: 12.5, marginTop: 2 }}>
-              {e.category.name} · {prettyDate(e.date, locale)}
+              {categoryLabel(e.category, locale)} · {prettyDate(e.date, locale)}
               {e.note ? ` · ${e.note}` : ""}
             </div>
           </div>

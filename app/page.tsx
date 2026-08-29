@@ -6,10 +6,11 @@ import { formatMoney } from "@/lib/format";
 import { Card } from "@/app/ui/Card";
 import { CategoryChart, DayOfWeekChart } from "@/app/ui/Charts";
 import { useT } from "@/app/ui/LanguageProvider";
+import { categoryLabel } from "@/lib/category";
 
 type Kpis = {
   range: string; start: string; end: string; total: number; count: number;
-  byCategory: { name: string; total: number }[];
+  byCategory: { id: string; nameEn: string | null; nameHe: string | null; total: number }[];
   byShop: { shop: string; total: number }[];
   byDayOfWeek: { day: number; total: number }[];
 };
@@ -174,7 +175,13 @@ export default function Dashboard() {
           <Card delay={1}>
             <SectionTitle eyebrow={t("dash.eyebrow.where")} title={t("dash.byCategory")} />
             {kpis.byCategory.length ? (
-              <CategoryChart data={kpis.byCategory} />
+              <CategoryChart
+                data={kpis.byCategory.map((c) => ({
+                  id: c.id,
+                  name: categoryLabel(c, locale),
+                  total: c.total,
+                }))}
+              />
             ) : (
               <Empty />
             )}

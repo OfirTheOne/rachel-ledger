@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   const where = from && to ? { date: { gte: new Date(from), lt: new Date(to) } } : {};
   const expenses = await prisma.expense.findMany({
     where,
-    include: { category: { select: { name: true } } },
+    include: { category: { select: { id: true, nameEn: true, nameHe: true } } },
     orderBy: { date: "desc" },
   });
   return NextResponse.json(expenses);
